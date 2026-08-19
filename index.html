@@ -45,9 +45,8 @@ body {
   background: rgba(var(--goo-color), .25);
   color: var(--text);
 }
-.nav {
+.topbar {
   flex-shrink: 0;
-  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,44 +61,6 @@ body {
   letter-spacing: .05em;
   white-space: nowrap;
 }
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: clamp(24px, 5vw, 64px);
-}
-.nav-links {
-  position: relative;
-  display: flex;
-  gap: clamp(18px, 3vw, 40px);
-}
-.goo-layer {
-  position: absolute;
-  inset: -12px -20px;
-  filter: url(#goo);
-  opacity: var(--goo-opacity);
-  pointer-events: none;
-}
-.goo-blob, .goo-drop {
-  position: absolute;
-  border-radius: 50%;
-  background: rgb(var(--goo-color));
-  will-change: transform;
-}
-.goo-blob { width: 12px; height: 12px; }
-.goo-drop { width: 7px;  height: 7px; }
-.nav-link {
-  position: relative;
-  z-index: 1;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  text-decoration: none;
-  color: var(--text-dim);
-  padding: var(--sp-1) 0;
-  transition: color .2s ease;
-  white-space: nowrap;
-}
-.nav-link:hover,
-.nav-link.is-active { color: var(--text); }
 .lang-switch {
   display: flex;
   gap: 2px;
@@ -296,7 +257,6 @@ body {
   letter-spacing: .12em;
 }
 @media (max-width: 720px) {
-  .nav { flex-wrap: wrap; row-gap: var(--sp-4); }
   .link-name { min-width: 0; }
   .link-meta { display: none; }
   .social-link { padding-left: var(--sp-4); }
@@ -307,7 +267,6 @@ body {
 }
 @media (prefers-reduced-motion: reduce) {
   .drip { animation: none; opacity: 0; }
-  .goo-layer { display: none; }
   .hero-title::after { animation: none; }
   html { scroll-behavior: auto; }
 }
@@ -329,25 +288,12 @@ body {
   </defs>
 </svg>
 
-<header class="nav">
+<header class="topbar">
   <a class="brand" href="#top" data-i18n="brand">涟</a>
-  <div class="nav-right">
-    <nav class="nav-links" id="navLinks">
-      <div class="goo-layer" aria-hidden="true">
-        <div class="goo-blob" id="gooBlob"></div>
-        <div class="goo-drop" id="gooDrop"></div>
-      </div>
-      <a class="nav-link is-active" href="#top"                data-i18n="nav.home">首页</a>
-      <a class="nav-link" href="https://archive.heyuchick.com" data-i18n="nav.archive">档案</a>
-      <a class="nav-link" href="https://blog.heyuchick.com"    data-i18n="nav.blog">博客</a>
-      <a class="nav-link" href="https://tools.heyuchick.com"   data-i18n="nav.tools">工具</a>
-      <a class="nav-link" href="https://status.heyuchick.com"  data-i18n="nav.status">状态</a>
-    </nav>
-    <div class="lang-switch" role="group" aria-label="Language / 语言 / 言語">
-      <button class="lang-btn is-active" data-lang="zh">中</button>
-      <button class="lang-btn" data-lang="en">EN</button>
-      <button class="lang-btn" data-lang="ja">日</button>
-    </div>
+  <div class="lang-switch" role="group" aria-label="Language / 语言 / 言語">
+    <button class="lang-btn is-active" data-lang="zh">中</button>
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="ja">日</button>
   </div>
 </header>
 
@@ -416,11 +362,6 @@ const I18N = {
     _lang: 'zh-CN',
     _title: '涟 Lian',
     'brand': '涟',
-    'nav.home': '首页',
-    'nav.archive': '档案',
-    'nav.blog': '博客',
-    'nav.tools': '工具',
-    'nav.status': '状态',
     'hero.tag': 'SPECIMEN-07 // 蛞蝓小狗',
     'hero.title': '涟',
     'hero.desc': '深海海蛞蝓 × 白色犬兽人的共生体。看起来是无害黏人的少年小狗，实际上是能偷走别人能力的软体异种。',
@@ -440,11 +381,6 @@ const I18N = {
     _lang: 'en',
     _title: 'Lian — Slug Pup',
     'brand': 'Lian',
-    'nav.home': 'Home',
-    'nav.archive': 'Archive',
-    'nav.blog': 'Blog',
-    'nav.tools': 'Tools',
-    'nav.status': 'Status',
     'hero.tag': 'SPECIMEN-07 // SLUG PUP',
     'hero.title': 'Lian',
     'hero.desc': 'A symbiote of a deep-sea sea slug and a white dog beastman. He looks like a harmless, clingy pup — in truth, a soft-bodied entity that steals abilities through touch.',
@@ -464,11 +400,6 @@ const I18N = {
     _lang: 'ja',
     _title: 'リアン Lian',
     'brand': 'リアン',
-    'nav.home': 'ホーム',
-    'nav.archive': 'アーカイブ',
-    'nav.blog': 'ブログ',
-    'nav.tools': 'ツール',
-    'nav.status': 'ステータス',
     'hero.tag': 'SPECIMEN-07 // ナメクジわんこ',
     'hero.title': 'リアン',
     'hero.desc': '深海のナメクジ × 白い犬の獣人の共生体。無害で人懐っこい少年に見えるが、実は触れた相手の能力を盗む軟体共生体。',
@@ -518,48 +449,6 @@ function typeTitle(text) {
   })();
 }
 
-const container = document.getElementById('navLinks');
-const blob = document.getElementById('gooBlob');
-const drop = document.getElementById('gooDrop');
-const links = container.querySelectorAll('.nav-link');
-let targetX = 0, blobX = 0, dropX = 0;
-let visible = false;
-
-function centerOf(el) {
-  const c = container.getBoundingClientRect();
-  const r = el.getBoundingClientRect();
-  return r.left - c.left + r.width / 2 + 20;
-}
-
-function moveTo(el, snap) {
-  targetX = centerOf(el);
-  if (snap) { blobX = dropX = targetX; }
-  visible = true;
-}
-
-const active = container.querySelector('.nav-link.is-active');
-if (active) moveTo(active, true);
-
-links.forEach(l => l.addEventListener('mouseenter', () => moveTo(l)));
-container.addEventListener('mouseleave', () => {
-  if (active) moveTo(active); else visible = false;
-});
-
-const BASELINE = 34;
-
-function tick() {
-  blobX += (targetX - blobX) * 0.22;
-  dropX += (blobX - dropX) * 0.10;
-  const v = Math.min(Math.abs(targetX - blobX) / 40, 1);
-  blob.style.transform =
-    `translate(${blobX - 6}px, ${BASELINE}px) scale(${1 + v * 0.9}, ${1 - v * 0.35})`;
-  drop.style.transform =
-    `translate(${dropX - 3.5}px, ${BASELINE + 2.5}px)`;
-  blob.style.opacity = drop.style.opacity = visible ? 1 : 0;
-  requestAnimationFrame(tick);
-}
-tick();
-
 const socialToggle = document.getElementById('socialToggle');
 const socialSub = document.getElementById('socialSub');
 socialToggle.addEventListener('click', () => {
@@ -583,7 +472,6 @@ function setLang(lang) {
   langBtns.forEach(b =>
     b.classList.toggle('is-active', b.dataset.lang === lang));
   localStorage.setItem('lian-lang', lang);
-  requestAnimationFrame(() => moveTo(active, true));
 }
 
 langBtns.forEach(b =>
