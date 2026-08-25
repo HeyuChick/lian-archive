@@ -4,6 +4,8 @@ import { SITE_TITLE, SITE_DESCRIPTION, DEFAULT_LOCALE, HTML_LANG, MOODS, type Lo
 import { t } from '../i18n/ui';
 import LangSwitcher from '../components/LangSwitcher.astro';
 import SlimeRipple from '../components/SlimeRipple.astro';
+import AWaves from '../components/AWaves.astro';
+import EmotionField from '../components/EmotionField.astro';
 
 interface Props {
   title?: string;
@@ -16,9 +18,20 @@ const { title, description = SITE_DESCRIPTION, locale = DEFAULT_LOCALE, mood = '
 const pageTitle = title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
 const strings = t(locale);
 const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
+
+/* 页面 mood → 情绪色阶锚点（data-emo）与初始 --goo-color */
+const EMO_INDEX: Record<string, number> = {
+  calm: 1, focus: 2, tense: 3, excited: 4, overload: 5,
+};
+const EMO_RGB: Record<string, string> = {
+  calm: '94, 234, 212', focus: '103, 232, 249', tense: '167, 139, 250',
+  excited: '244, 114, 182', overload: '248, 113, 113',
+};
+const emoIndex = EMO_INDEX[mood] ?? 1;
+const emoRgb = EMO_RGB[mood] ?? EMO_RGB.calm;
 ---
 <!doctype html>
-<html lang={HTML_LANG[locale]} style={`--mood: ${MOODS[mood].color}`}>
+<html lang={HTML_LANG[locale]} data-emo={emoIndex} style={`--mood: ${MOODS[mood].color}; --goo-color: ${emoRgb}`}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -27,6 +40,7 @@ const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
     <title>{pageTitle}</title>
   </head>
   <body>
+    <AWaves />
     <header class="site-header">
       <a class="site-title" href={homeHref}>{SITE_TITLE}</a>
       <nav class="site-nav">
@@ -40,5 +54,6 @@ const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
     </main>
     <footer class="site-footer">© 2026 HeyuChick · 涟（Lian）</footer>
     <SlimeRipple />
+    <EmotionField />
   </body>
 </html>

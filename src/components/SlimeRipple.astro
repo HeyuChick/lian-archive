@@ -1,5 +1,6 @@
 ---
 // 史莱姆涟漪：指针按下时扩散的黏液波纹（零依赖，尊重减少动态偏好）
+// 颜色接入情绪显色系统：跟随 --goo-color 漂移
 ---
 <script>
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -20,13 +21,14 @@
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    background: var(--mood, #7fb8a4);
+    background: rgb(var(--goo-color, 148, 234, 212));
     opacity: 0.35;
     filter: blur(1px);
     pointer-events: none;
     transform: translate(-50%, -50%) scale(1);
     animation: slime-spread 0.9s ease-out forwards;
     z-index: 9999;
+    transition: background-color .8s ease;
   }
   @keyframes slime-spread {
     to {

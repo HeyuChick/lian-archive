@@ -1,0 +1,211 @@
+---
+// 背景波纹线条：Perlin 噪声驱动 + 指针推挤
+// 移植自主站（heyuchick.com），档案站以低透明度运行（阅读优先）
+---
+<a-waves aria-hidden="true"><svg class="js-svg"></svg></a-waves>
+
+<style>
+  a-waves {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: var(--waves-opacity, .08);
+    transition: opacity .6s ease;
+  }
+  a-waves svg { display: block; width: 100%; height: 100%; }
+  a-waves path {
+    fill: none;
+    stroke: rgb(var(--goo-color, 148, 234, 212));
+    stroke-width: 1px;
+    transition: stroke .8s ease;
+  }
+  /* 内容层抬升到波纹之上 */
+  :global(.site-header),
+  :global(main),
+  :global(.site-footer) {
+    position: relative;
+    z-index: 1;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    a-waves { display: none; }
+  }
+</style>
+
+<script>
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  class Noise {
+    constructor(seed = Math.random()) {
+      this.p = new Uint8Array(256);
+      let s = Math.floor(seed * 256) || 1;
+      for (let i = 0; i < 256; i++) {
+        s = (s * 16807) % 2147483647;
+        this.p[i] = s % 256;
+      }
+    }
+    fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+    lerp(a, b, t) { return a + t * (b - a); }
+    grad(h, x, y) {
+      const u = h < 4 ? x : y;
+      const v = h < 4 ? y : x;
+      return ((h & 1) ? -u : u) + ((h & 2) ? -2 * v : 2 * v);
+    }
+    perlin2(x, y) {
+      const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+      x -= Math.floor(x); y -= Math.floor(y);
+      const u = this.fade(x), v = this.fade(y);
+      const A = this.p[X] + Y, B = this.p[X + 1 & 255] + Y;
+      return this.lerp(
+        this.lerp(this.grad(this.p[A] & 7, x, y),
+                  this.grad(this.p[B] & 7, x - 1, y), u),
+        this.lerp(this.grad(this.p[A + 1 & 255] & 7, x, y - 1),
+                  this.grad(this.p[B + 1 & 255] & 7, x - 1, y - 1), u),
+        v) * 0.5;
+    }
+  }
+
+  class AWaves extends HTMLElement {
+    connectedCallback() {
+      if (reduced) return;
+      this.svg = this.querySelector('.js-svg');
+      this.mouse = { x: -10, y: 0, lx: 0, ly: 0, sx: 0, sy: 0, v: 0, vs: 0, a: 0, set: false };
+      this.lines = [];
+      this.paths = [];
+      this.noise = new Noise(Math.random());
+      this.running = true;
+      this.setSize();
+      this.setLines();
+      this.bindEvents();
+      requestAnimationFrame(this.tick.bind(this));
+    }
+    bindEvents() {
+      window.addEventListener('resize', this.onResize.bind(this));
+      window.addEventListener('pointermove', this.onPointerMove.bind(this));
+      document.addEventListener('visibilitychange', () => {
+        this.running = !document.hidden;
+        if (this.running) requestAnimationFrame(this.tick.bind(this));
+      });
+    }
+    onResize() { this.setSize(); this.setLines(); }
+    onPointerMove(e) { this.updatePointerPosition(e.clientX, e.clientY); }
+    updatePointerPosition(x, y) {
+      const { mouse } = this;
+      mouse.x = x - this.bounding.left;
+      mouse.y = y - this.bounding.top + window.scrollY;
+      if (!mouse.set) {
+        mouse.sx = mouse.x; mouse.sy = mouse.y;
+        mouse.lx = mouse.x; mouse.ly = mouse.y;
+        mouse.set = true;
+      }
+    }
+    setSize() {
+      this.bounding = this.getBoundingClientRect();
+      this.svg.style.width = `${this.bounding.width}px`;
+      this.svg.style.height = `${this.bounding.height}px`;
+    }
+    setLines() {
+      const { width, height } = this.bounding;
+      this.lines = [];
+      this.paths.forEach(p => p.remove());
+      this.paths = [];
+      const xGap = 14, yGap = 36;
+      const oWidth = width + 200, oHeight = height + 30;
+      const totalLines = Math.ceil(oWidth / xGap);
+      const totalPoints = Math.ceil(oHeight / yGap);
+      const xStart = (width - xGap * totalLines) / 2;
+      const yStart = (height - yGap * totalPoints) / 2;
+      for (let i = 0; i <= totalLines; i++) {
+        const points = [];
+        for (let j = 0; j <= totalPoints; j++) {
+          points.push({
+            x: xStart + xGap * i,
+            y: yStart + yGap * j,
+            wave: { x: 0, y: 0 },
+            cursor: { x: 0, y: 0, vx: 0, vy: 0 },
+          });
+        }
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        this.svg.appendChild(path);
+        this.paths.push(path);
+        this.lines.push(points);
+      }
+    }
+    movePoints(time) {
+      const { lines, mouse, noise } = this;
+      lines.forEach(points => {
+        points.forEach(p => {
+          const move = noise.perlin2(
+            (p.x + time * 0.0125) * 0.002,
+            (p.y + time * 0.005) * 0.0015
+          ) * 12;
+          p.wave.x = Math.cos(move) * 32;
+          p.wave.y = Math.sin(move) * 16;
+          const dx = p.x - mouse.sx;
+          const dy = p.y - mouse.sy;
+          const d = Math.hypot(dx, dy);
+          const l = Math.max(175, mouse.vs);
+          if (d < l) {
+            const s = 1 - d / l;
+            const f = Math.cos(d * 0.001) * s;
+            p.cursor.vx += Math.cos(mouse.a) * f * l * mouse.vs * 0.00065;
+            p.cursor.vy += Math.sin(mouse.a) * f * l * mouse.vs * 0.00065;
+          }
+          p.cursor.vx += (0 - p.cursor.x) * 0.005;
+          p.cursor.vy += (0 - p.cursor.y) * 0.005;
+          p.cursor.vx *= 0.925;
+          p.cursor.vy *= 0.925;
+          p.cursor.x += p.cursor.vx * 2;
+          p.cursor.y += p.cursor.vy * 2;
+          p.cursor.x = Math.min(100, Math.max(-100, p.cursor.x));
+          p.cursor.y = Math.min(100, Math.max(-100, p.cursor.y));
+        });
+      });
+    }
+    moved(point, withCursorForce = true) {
+      const coords = {
+        x: point.x + point.wave.x + (withCursorForce ? point.cursor.x : 0),
+        y: point.y + point.wave.y + (withCursorForce ? point.cursor.y : 0),
+      };
+      coords.x = Math.round(coords.x * 10) / 10;
+      coords.y = Math.round(coords.y * 10) / 10;
+      return coords;
+    }
+    drawLines() {
+      const { lines, paths } = this;
+      lines.forEach((points, lIndex) => {
+        let p1 = this.moved(points[0], false);
+        let d = `M ${p1.x} ${p1.y}`;
+        points.forEach((pt, pIndex) => {
+          const isLast = pIndex === points.length - 1;
+          const m = this.moved(pt, !isLast);
+          d += `L ${m.x} ${m.y}`;
+        });
+        paths[lIndex].setAttribute('d', d);
+      });
+    }
+    tick(time) {
+      if (!this.running) return;
+      const { mouse } = this;
+      mouse.sx += (mouse.x - mouse.sx) * 0.1;
+      mouse.sy += (mouse.y - mouse.sy) * 0.1;
+      const dx = mouse.x - mouse.lx;
+      const dy = mouse.y - mouse.ly;
+      const d = Math.hypot(dx, dy);
+      mouse.v = d;
+      mouse.vs += (d - mouse.vs) * 0.1;
+      mouse.vs = Math.min(100, mouse.vs);
+      mouse.lx = mouse.x;
+      mouse.ly = mouse.y;
+      mouse.a = Math.atan2(dy, dx);
+      this.movePoints(time);
+      this.drawLines();
+      requestAnimationFrame(this.tick.bind(this));
+    }
+  }
+
+  if (!reduced && !customElements.get('a-waves')) {
+    customElements.define('a-waves', AWaves);
+  }
+</script>
