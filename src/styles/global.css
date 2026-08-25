@@ -65,6 +65,10 @@ body {
   font-family: var(--font-sans);
   line-height: 1.8;
   -webkit-font-smoothing: antialiased;
+  /* flex 兑底：即使 fixed 失效，页脚也被推到视口底部 */
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 选区染色跟随情绪系统；内容站保留文本选择能力 */
@@ -79,8 +83,7 @@ a { color: inherit; }
    悬浮光标（移植自主站，仅精确指针设备启用）
    ============================================================ */
 body.has-cursor,
-body.has-cursor a,
-body.has-cursor button {
+body.has-cursor * {
   cursor: none;
 }
 .cursor-dot {
@@ -163,21 +166,22 @@ body.has-cursor button {
   border-radius: 999px;
   padding: 3px;
 }
-.lang-switcher a {
+.lang-switcher .lang-btn {
   font-family: var(--font-mono);
   font-size: 11px;
   line-height: 1;
   padding: 6px 10px;
+  border: none;
   border-radius: 999px;
-  text-decoration: none;
+  background: transparent;
   color: var(--text-faint);
+  cursor: pointer;
   transition: color .2s, background .2s;
 }
-.lang-switcher a:hover { color: var(--text-dim); }
-.lang-switcher a[aria-current="page"] {
+.lang-switcher .lang-btn:hover { color: var(--text-dim); }
+.lang-switcher .lang-btn.is-active {
   background: var(--text);
   color: var(--bg);
-  opacity: 1;
 }
 
 .site-footer {
@@ -203,8 +207,10 @@ body.has-cursor button {
   letter-spacing: .12em;
 }
 
-/* 正文区为固定栏让位 */
+/* 正文区为固定栏让位；flex 兑底 */
 main {
+  flex: 1 0 auto;
+  width: 100%;
   max-width: var(--max-w);
   margin: 0 auto;
   padding:

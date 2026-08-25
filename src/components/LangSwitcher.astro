@@ -1,12 +1,8 @@
 ---
-import { LOCALES, DEFAULT_LOCALE, type Locale } from '../consts';
-
-interface Props { current: Locale }
-const { current } = Astro.props;
-const LABELS: Record<Locale, string> = { zh: '中', en: 'EN', ja: '日' };
+// 语言切换：客户端按钮，写入 localStorage 并即时应用，全站 UI 保持所选语言
 ---
-<span class="lang-switcher">
-  {LOCALES.map((l) => (
-    <a href={l === DEFAULT_LOCALE ? '/' : `/${l}/`} aria-current={l === current ? 'page' : undefined}>{LABELS[l]}</a>
-  ))}
-</span>
+<div class="lang-switcher" role="group" aria-label="Language / 语言 / 言語">
+  <button class="lang-btn" type="button" data-lang="zh">中</button>
+  <button class="lang-btn" type="button" data-lang="en">EN</button>
+  <button class="lang-btn" type="button" data-lang="ja">日</button>
+</div>

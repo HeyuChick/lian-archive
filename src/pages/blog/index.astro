@@ -10,10 +10,10 @@ const posts = (
 const fmt = (d: Date) =>
   `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`;
 ---
-<BaseLayout title="研究员日志">
+<BaseLayout title="观测日志">
   <header class="page-head">
-    <p class="page-kicker">FIELD NOTES // 研究记录</p>
-    <h1 class="page-title">研究员日志</h1>
+    <p class="page-kicker" data-i18n="blog.kicker">FIELD NOTES // 观测记录</p>
+    <h1 class="page-title" data-i18n="blog.title">观测日志</h1>
   </header>
   <ul class="post-list">
     {posts.map((post) => (
