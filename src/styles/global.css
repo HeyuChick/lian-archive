@@ -1,7 +1,7 @@
 /* ============================================================
    涟 · 设计系统
    极简 / 情绪显色 / CJK 三语
-   令牌层与主站（heyuchick.com, lian-site v11）保持一致
+   令牌层与主站（heyuchick.com）保持一致
    ============================================================ */
 
 :root {
@@ -9,16 +9,14 @@
   --bg:        #0a0a0a;
   --bg-soft:   #111113;
   --line:      #1f1f22;
-  --border:    var(--line); /* 兼容现有组件引用 */
+  --border:    var(--line);
   --text:      #f5f5f4;
   --text-dim:  #a1a1aa;
   --text-faint:#52525b;
 
   /* ---------- 情绪显色系统 ----------
-     RGB 三元组，供 rgb() / rgba() 调用。
      色阶对应档案《视觉设定规范 v1.3》情绪显色序列；
-     网站使用亮色版以保证近黑背景可读性，括号内为档案母版色值，
-     插画 / 印刷等场景应引用母版值。 */
+     网站使用亮色版以保证近黑背景可读性，括号内为档案母版色值。 */
   --emo-0: 255, 255, 255;  /* 平静   白                     */
   --emo-1: 94, 234, 212;   /* 放松   海水蓝绿（母版 #4A9B8E） */
   --emo-2: 103, 232, 249;  /* 波动   青      （母版 #3C7A8C） */
@@ -26,15 +24,14 @@
   --emo-4: 244, 114, 182;  /* 兴奋   洋红    （母版 #E85D9A） */
   --emo-5: 248, 113, 113;  /* 过载   红      （母版 #C7446E） */
 
-  /* 黏液 / 波纹系统（与主站同名令牌，供 SlimeRipple 等组件染色） */
+  /* 黏液 / 波纹系统 */
   --goo-color:     var(--emo-0);
   --goo-opacity:   .85;
-  --waves-opacity: .14;
+  --waves-opacity: .08;
 
-  /* 页面情绪色：由 BaseLayout 按页面 / 文章注入，
-     从情绪色阶取色；默认为「放松」态 */
+  /* 页面情绪色：由 BaseLayout 按页面 / 文章注入 */
   --mood: rgb(var(--emo-1));
-  --mood-calm: rgb(var(--emo-1)); /* 兼容邮箱卡片等引用 */
+  --mood-calm: rgb(var(--emo-1));
 
   /* ---------- 字体栈 ---------- */
   --font-sans: 'Noto Sans SC', 'Noto Sans JP', system-ui, -apple-system,
@@ -45,12 +42,16 @@
   --sp-1: 4px;  --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
   --sp-6: 24px; --sp-8: 32px;  --sp-12: 48px; --sp-16: 64px;
 
-  /* ---------- 负空间（弹性页面留白） ---------- */
+  /* ---------- 负空间 ---------- */
   --page-pad-x: clamp(24px, 9vw, 120px);
   --page-pad-y: clamp(16px, 3vh, 32px);
 
   /* ---------- 内容宽度 ---------- */
   --max-w: 42rem;
+
+  /* ---------- 固定栏高度 ---------- */
+  --header-h: 64px;
+  --footer-h: 44px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -74,105 +75,268 @@ body {
 
 a { color: inherit; }
 
-/* ---------- 头部 / 尾部 ---------- */
+/* ============================================================
+   悬浮光标（移植自主站，仅精确指针设备启用）
+   ============================================================ */
+body.has-cursor,
+body.has-cursor a,
+body.has-cursor button {
+  cursor: none;
+}
+.cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: rgb(var(--goo-color));
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity .3s ease,
+    background-color .8s ease,
+    width .25s ease, height .25s ease, margin .25s ease;
+}
+.cursor-dot.visible { opacity: .9; }
+.cursor-dot.hovering {
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  opacity: .5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cursor-dot { display: none; }
+}
+
+/* ============================================================
+   固定顶栏 / 页脚（与主站气质一致：mono + 毛玻璃）
+   ============================================================ */
 .site-header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(10, 10, 10, .8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.header-inner {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 2rem 1.25rem;
+  height: var(--header-h);
+  padding: 0 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
 }
 .site-title {
-  font-weight: 700;
+  font-weight: 900;
+  font-size: 1.1rem;
   text-decoration: none;
-  letter-spacing: 0.02em;
+  letter-spacing: .05em;
+  white-space: nowrap;
 }
-.site-nav { display: flex; align-items: center; gap: 1.25rem; font-size: 0.9rem; }
-.site-nav a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
-.site-nav a:hover { color: var(--mood); }
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+}
+.site-nav > a {
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color .2s;
+  white-space: nowrap;
+}
+.site-nav > a:hover { color: var(--text); }
 
-.lang-switcher { display: inline-flex; gap: 0.5rem; margin-left: 0.5rem; }
-.lang-switcher a { opacity: 0.55; }
-.lang-switcher a[aria-current="page"] { opacity: 1; color: var(--mood); }
-
-main {
-  max-width: var(--max-w);
-  margin: 0 auto;
-  padding: 0 1.25rem 4rem;
+/* 语言切换：胶囊样式（与主站一致） */
+.lang-switcher {
+  display: flex;
+  gap: 2px;
+  margin-left: 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 3px;
+}
+.lang-switcher a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1;
+  padding: 6px 10px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: var(--text-faint);
+  transition: color .2s, background .2s;
+}
+.lang-switcher a:hover { color: var(--text-dim); }
+.lang-switcher a[aria-current="page"] {
+  background: var(--text);
+  color: var(--bg);
+  opacity: 1;
 }
 
 .site-footer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+  background: rgba(10, 10, 10, .8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.footer-inner {
   max-width: var(--max-w);
   margin: 0 auto;
-  padding: 2rem 1.25rem 3rem;
-  color: var(--text-dim);
-  font-size: 0.8rem;
-  border-top: 1px solid var(--border);
-}
-
-/* ---------- 首页 Hero ---------- */
-.hero { padding: 4rem 0 3rem; }
-.hero-kicker { color: var(--mood); font-size: 0.85rem; letter-spacing: 0.12em; margin: 0 0 0.75rem; }
-.hero-title { font-size: clamp(2.5rem, 8vw, 4rem); line-height: 1.15; margin: 0 0 1rem; }
-.hero-title span { color: var(--text-dim); font-weight: 400; }
-.hero-sub { color: var(--text-dim); max-width: 32em; margin: 0; }
-
-/* ---------- 链接卡片（社交模块） ---------- */
-.link-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.75rem;
-  padding: 1rem 0 2.5rem;
-}
-.link-card {
+  height: var(--footer-h);
+  padding: 0 1.25rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.9rem 1.1rem;
-  background: var(--bg-soft);
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  text-decoration: none;
-  transition: border-color 0.2s, transform 0.2s;
-}
-.link-card:hover { border-color: var(--mood); transform: translateY(-2px); }
-.link-card svg { flex: none; color: var(--mood); }
-.link-card-label { font-size: 0.8rem; color: var(--text-dim); flex: none; }
-.link-card-value { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-
-/* ---------- 双模块入口 ---------- */
-.modules { display: grid; gap: 0.75rem; padding-bottom: 2rem; }
-.module-card {
-  display: block;
-  padding: 1.25rem;
-  border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  text-decoration: none;
-  transition: border-color 0.2s;
-}
-.module-card:hover { border-color: var(--mood); }
-.module-card h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
-.module-card p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
-
-/* ---------- 日志/档案列表 ---------- */
-.post-list { list-style: none; margin: 1.5rem 0; padding: 0; display: grid; gap: 0.5rem; }
-.post-list a {
-  display: flex;
+  justify-content: space-between;
   gap: 1rem;
-  align-items: baseline;
-  padding: 0.75rem 1rem;
-  border-radius: 0.5rem;
-  text-decoration: none;
-  transition: background 0.2s;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-faint);
+  letter-spacing: .12em;
 }
-.post-list a:hover { background: var(--bg-soft); }
-.post-list time { color: var(--text-dim); font-size: 0.85rem; flex: none; font-variant-numeric: tabular-nums; }
-.post-list a:hover span { color: var(--mood); }
 
-/* ---------- 正文排版 ---------- */
-.prose { padding-top: 2rem; }
+/* 正文区为固定栏让位 */
+main {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding:
+    calc(var(--header-h) + 2rem) 1.25rem calc(var(--footer-h) + 3rem);
+}
+
+/* ============================================================
+   首页：双模块入口（主站全宽行式卡片）
+   ============================================================ */
+.modules {
+  display: flex;
+  flex-direction: column;
+  padding-top: clamp(2rem, 10vh, 6rem);
+}
+.module-card {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-2);
+  border-top: 1px solid var(--line);
+  text-decoration: none;
+  transition: padding-left .25s ease, background .25s ease;
+}
+.module-card:last-child { border-bottom: 1px solid var(--line); }
+.module-card:hover {
+  padding-left: var(--sp-6);
+  background: rgba(17, 17, 19, .75);
+}
+.module-name {
+  font-size: clamp(18px, 2.2vw, 22px);
+  font-weight: 700;
+  min-width: 6em;
+}
+.module-meta {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  flex: 1;
+}
+.module-arrow {
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  transition: transform .25s ease, color .8s ease;
+}
+.module-card:hover .module-arrow {
+  transform: translateX(4px);
+  color: rgb(var(--goo-color));
+}
+
+/* ============================================================
+   页头（列表页标题区，SCP 档案风）
+   ============================================================ */
+.page-head { margin-bottom: 2rem; }
+.page-kicker {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: .25em;
+  margin: 0 0 .5rem;
+}
+.page-title {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: .02em;
+  margin: 0;
+}
+
+/* ============================================================
+   日志 / 档案列表：标题左对齐，日期右对齐，YYYY/MM/DD 等宽
+   ============================================================ */
+.post-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.post-list li { border-top: 1px solid var(--line); }
+.post-list li:last-child { border-bottom: 1px solid var(--line); }
+.post-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-6);
+  padding: var(--sp-4) var(--sp-2);
+  text-decoration: none;
+  transition: padding-left .25s ease, background .25s ease;
+}
+.post-row:hover {
+  padding-left: var(--sp-4);
+  background: rgba(17, 17, 19, .75);
+}
+.post-title {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.post-row:hover .post-title { color: rgb(var(--goo-color)); }
+.post-date {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.post-doc {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-faint);
+  letter-spacing: .1em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.empty-state {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .15em;
+  color: var(--text-faint);
+  padding: 3rem 0;
+  text-align: center;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+/* ============================================================
+   正文排版
+   ============================================================ */
+.prose { padding-top: 1rem; }
 .prose h1 { font-size: 1.9rem; line-height: 1.3; margin: 0 0 0.5rem; }
 .prose h2 { margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
 .prose a { color: var(--mood); }
@@ -192,6 +356,19 @@ main {
   border-left: 3px solid var(--mood);
   color: var(--text-dim);
 }
-.post-meta { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 2rem; }
+.post-meta {
+  font-family: var(--font-mono);
+  color: var(--text-faint);
+  font-size: 12px;
+  letter-spacing: .1em;
+  margin: 0 0 2rem;
+}
 
-.empty-state { color: var(--text-dim); padding: 3rem 0; text-align: center; }
+/* ============================================================
+   响应式
+   ============================================================ */
+@media (max-width: 720px) {
+  .module-name { min-width: 0; }
+  .module-meta { display: none; }
+  .site-nav > a { display: none; } /* 移动端只留语言切换 */
+}

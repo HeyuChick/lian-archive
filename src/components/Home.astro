@@ -1,0 +1,28 @@
+---
+// 首页：仅保留双模块入口卡片
+// en / ja 页面复用本组件，仅传入 locale 切换 UI 文案
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { t } from '../i18n/ui';
+import { DEFAULT_LOCALE, type Locale } from '../consts';
+
+interface Props {
+  locale?: Locale;
+}
+
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const strings = t(locale);
+---
+<BaseLayout locale={locale}>
+  <section class="modules">
+    <a class="module-card" href="/archive/">
+      <span class="module-name">{strings['home.archive.name']}</span>
+      <span class="module-meta">{strings['home.archive.desc']}</span>
+      <span class="module-arrow">→</span>
+    </a>
+    <a class="module-card" href="/blog/">
+      <span class="module-name">{strings['home.blog.name']}</span>
+      <span class="module-meta">{strings['home.blog.desc']}</span>
+      <span class="module-arrow">→</span>
+    </a>
+  </section>
+</BaseLayout>

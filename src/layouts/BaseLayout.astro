@@ -6,6 +6,7 @@ import LangSwitcher from '../components/LangSwitcher.astro';
 import SlimeRipple from '../components/SlimeRipple.astro';
 import AWaves from '../components/AWaves.astro';
 import EmotionField from '../components/EmotionField.astro';
+import CursorDot from '../components/CursorDot.astro';
 
 interface Props {
   title?: string;
@@ -42,18 +43,26 @@ const emoRgb = EMO_RGB[mood] ?? EMO_RGB.calm;
   <body>
     <AWaves />
     <header class="site-header">
-      <a class="site-title" href={homeHref}>{SITE_TITLE}</a>
-      <nav class="site-nav">
-        <a href="/blog/">{strings['nav.blog']}</a>
-        <a href="/archive/">{strings['nav.archive']}</a>
-        <LangSwitcher current={locale} />
-      </nav>
+      <div class="header-inner">
+        <a class="site-title" href={homeHref}>{SITE_TITLE}</a>
+        <nav class="site-nav">
+          <a href="/blog/">{strings['nav.blog']}</a>
+          <a href="/archive/">{strings['nav.archive']}</a>
+          <LangSwitcher current={locale} />
+        </nav>
+      </div>
     </header>
     <main>
       <slot />
     </main>
-    <footer class="site-footer">© 2026 HeyuChick · 涟（Lian）</footer>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <span>© 2026 LIAN / HEYUCHICK</span>
+        <span>{strings['footer.note']}</span>
+      </div>
+    </footer>
     <SlimeRipple />
     <EmotionField />
+    <CursorDot />
   </body>
 </html>

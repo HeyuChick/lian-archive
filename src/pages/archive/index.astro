@@ -1,24 +1,28 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { MOODS } from '../../consts';
 
 const entries = (await getCollection('archive', ({ data }) => data.publish)).sort(
   (a, b) => a.data.order - b.data.order,
 );
+
+/* 档案编号：DOC-01、DOC-02…… 按 order 顺序生成 */
+const docNo = (n: number) => `DOC-${String(n + 1).padStart(2, '0')}`;
 ---
 <BaseLayout title="涟的档案">
-  <section class="prose">
-    <h1>涟的档案</h1>
-  </section>
+  <header class="page-head">
+    <p class="page-kicker">ARCHIVE // SPECIMEN-08</p>
+    <h1 class="page-title">涟的档案</h1>
+  </header>
   {entries.length === 0 ? (
-    <p class="empty-state">档案整理中，敬请期待。</p>
+    <p class="empty-state">该分区档案尚未解密，请等待权限开放。</p>
   ) : (
     <ul class="post-list">
-      {entries.map((entry) => (
+      {entries.map((entry, i) => (
         <li>
-          <a href={`/archive/${entry.id}/`} style={`--mood: ${MOODS[entry.data.mood].color}`}>
-            <span>{entry.data.title}</span>
+          <a class="post-row" href={`/archive/${entry.id}/`}>
+            <span class="post-title">{entry.data.title}</span>
+            <span class="post-doc">{docNo(i)}</span>
           </a>
         </li>
       ))}

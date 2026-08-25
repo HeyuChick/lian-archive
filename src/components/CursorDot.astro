@@ -1,0 +1,45 @@
+---
+// 悬浮光标：跟随圆点，悬停可交互元素时放大，颜色随情绪显色漂移
+// 仅精确指针设备启用；reduced-motion 停用
+---
+<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+
+<script>
+  (function initCursor() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!window.matchMedia('(pointer: fine)').matches) return;
+
+    const dot = document.getElementById('cursorDot');
+    if (!dot) return;
+    document.body.classList.add('has-cursor');
+
+    let cx = -100, cy = -100, tx = -100, ty = -100, shown = false;
+
+    window.addEventListener('pointermove', (e) => {
+      tx = e.clientX;
+      ty = e.clientY;
+      if (!shown) {
+        shown = true;
+        dot.classList.add('visible');
+      }
+    });
+
+    document.addEventListener('pointerleave', () => {
+      shown = false;
+      dot.classList.remove('visible');
+    });
+
+    document.addEventListener('mouseover', (e) => {
+      const t = e.target;
+      dot.classList.toggle('hovering',
+        !!(t instanceof Element && t.closest('a, button')));
+    });
+
+    (function follow() {
+      cx += (tx - cx) * 0.18;
+      cy += (ty - cy) * 0.18;
+      dot.style.transform = `translate(${cx}px, ${cy}px)`;
+      requestAnimationFrame(follow);
+    })();
+  })();
+</script>
