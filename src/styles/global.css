@@ -1,15 +1,55 @@
-/* ===== 涟 · 设计系统（极简 / 情绪色彩 / CJK 三语） ===== */
+/* ============================================================
+   涟 · 设计系统
+   极简 / 情绪显色 / CJK 三语
+   令牌层与主站（heyuchick.com, lian-site v11）保持一致
+   ============================================================ */
 
 :root {
-  --bg: #0d0e12;
-  --bg-soft: #15171e;
-  --text: #e9e7e2;
-  --text-dim: #9b988f;
-  --border: #262932;
-  /* 页面情绪色，由 BaseLayout 按页面/文章注入 */
-  --mood: #7fb8a4;
-  --font-sans: "Noto Sans SC", "Noto Sans JP", "Noto Sans", system-ui,
-    -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  /* ---------- 基础色板（与主站一致） ---------- */
+  --bg:        #0a0a0a;
+  --bg-soft:   #111113;
+  --line:      #1f1f22;
+  --border:    var(--line); /* 兼容现有组件引用 */
+  --text:      #f5f5f4;
+  --text-dim:  #a1a1aa;
+  --text-faint:#52525b;
+
+  /* ---------- 情绪显色系统 ----------
+     RGB 三元组，供 rgb() / rgba() 调用。
+     色阶对应档案《视觉设定规范 v1.3》情绪显色序列；
+     网站使用亮色版以保证近黑背景可读性，括号内为档案母版色值，
+     插画 / 印刷等场景应引用母版值。 */
+  --emo-0: 255, 255, 255;  /* 平静   白                     */
+  --emo-1: 94, 234, 212;   /* 放松   海水蓝绿（母版 #4A9B8E） */
+  --emo-2: 103, 232, 249;  /* 波动   青      （母版 #3C7A8C） */
+  --emo-3: 167, 139, 250;  /* 紧张   青紫    （母版 #6B5B95） */
+  --emo-4: 244, 114, 182;  /* 兴奋   洋红    （母版 #E85D9A） */
+  --emo-5: 248, 113, 113;  /* 过载   红      （母版 #C7446E） */
+
+  /* 黏液 / 波纹系统（与主站同名令牌，供 SlimeRipple 等组件染色） */
+  --goo-color:     var(--emo-0);
+  --goo-opacity:   .85;
+  --waves-opacity: .14;
+
+  /* 页面情绪色：由 BaseLayout 按页面 / 文章注入，
+     从情绪色阶取色；默认为「放松」态 */
+  --mood: rgb(var(--emo-1));
+  --mood-calm: rgb(var(--emo-1)); /* 兼容邮箱卡片等引用 */
+
+  /* ---------- 字体栈 ---------- */
+  --font-sans: 'Noto Sans SC', 'Noto Sans JP', system-ui, -apple-system,
+    'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Noto Sans SC', 'Noto Sans JP', monospace;
+
+  /* ---------- 间距刻度 ---------- */
+  --sp-1: 4px;  --sp-2: 8px;   --sp-3: 12px;  --sp-4: 16px;
+  --sp-6: 24px; --sp-8: 32px;  --sp-12: 48px; --sp-16: 64px;
+
+  /* ---------- 负空间（弹性页面留白） ---------- */
+  --page-pad-x: clamp(24px, 9vw, 120px);
+  --page-pad-y: clamp(16px, 3vh, 32px);
+
+  /* ---------- 内容宽度 ---------- */
   --max-w: 42rem;
 }
 
@@ -24,6 +64,12 @@ body {
   font-family: var(--font-sans);
   line-height: 1.8;
   -webkit-font-smoothing: antialiased;
+}
+
+/* 选区染色跟随情绪系统；内容站保留文本选择能力 */
+::selection {
+  background: rgba(var(--goo-color), .25);
+  color: var(--text);
 }
 
 a { color: inherit; }
@@ -136,6 +182,7 @@ main {
   padding: 0.15em 0.4em;
   border-radius: 0.3rem;
   font-size: 0.9em;
+  font-family: var(--font-mono);
 }
 .prose pre { padding: 1rem; border-radius: 0.75rem; overflow-x: auto; border: 1px solid var(--border); }
 .prose pre code { background: none; padding: 0; }
