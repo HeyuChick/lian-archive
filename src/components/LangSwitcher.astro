@@ -1,0 +1,12 @@
+---
+import { LOCALES, DEFAULT_LOCALE, type Locale } from '../consts';
+
+interface Props { current: Locale }
+const { current } = Astro.props;
+const LABELS: Record<Locale, string> = { zh: '中', en: 'EN', ja: '日' };
+---
+<span class="lang-switcher">
+  {LOCALES.map((l) => (
+    <a href={l === DEFAULT_LOCALE ? '/' : `/${l}/`} aria-current={l === current ? 'page' : undefined}>{LABELS[l]}</a>
+  ))}
+</span>

@@ -1,0 +1,150 @@
+/* ===== 涟 · 设计系统（极简 / 情绪色彩 / CJK 三语） ===== */
+
+:root {
+  --bg: #0d0e12;
+  --bg-soft: #15171e;
+  --text: #e9e7e2;
+  --text-dim: #9b988f;
+  --border: #262932;
+  /* 页面情绪色，由 BaseLayout 按页面/文章注入 */
+  --mood: #7fb8a4;
+  --font-sans: "Noto Sans SC", "Noto Sans JP", "Noto Sans", system-ui,
+    -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --max-w: 42rem;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.8;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+/* ---------- 头部 / 尾部 ---------- */
+.site-header {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 2rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.site-title {
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+}
+.site-nav { display: flex; align-items: center; gap: 1.25rem; font-size: 0.9rem; }
+.site-nav a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+.site-nav a:hover { color: var(--mood); }
+
+.lang-switcher { display: inline-flex; gap: 0.5rem; margin-left: 0.5rem; }
+.lang-switcher a { opacity: 0.55; }
+.lang-switcher a[aria-current="page"] { opacity: 1; color: var(--mood); }
+
+main {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 1.25rem 4rem;
+}
+
+.site-footer {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  border-top: 1px solid var(--border);
+}
+
+/* ---------- 首页 Hero ---------- */
+.hero { padding: 4rem 0 3rem; }
+.hero-kicker { color: var(--mood); font-size: 0.85rem; letter-spacing: 0.12em; margin: 0 0 0.75rem; }
+.hero-title { font-size: clamp(2.5rem, 8vw, 4rem); line-height: 1.15; margin: 0 0 1rem; }
+.hero-title span { color: var(--text-dim); font-weight: 400; }
+.hero-sub { color: var(--text-dim); max-width: 32em; margin: 0; }
+
+/* ---------- 链接卡片（社交模块） ---------- */
+.link-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  padding: 1rem 0 2.5rem;
+}
+.link-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.link-card:hover { border-color: var(--mood); transform: translateY(-2px); }
+.link-card svg { flex: none; color: var(--mood); }
+.link-card-label { font-size: 0.8rem; color: var(--text-dim); flex: none; }
+.link-card-value { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- 双模块入口 ---------- */
+.modules { display: grid; gap: 0.75rem; padding-bottom: 2rem; }
+.module-card {
+  display: block;
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+.module-card:hover { border-color: var(--mood); }
+.module-card h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
+.module-card p { margin: 0; color: var(--text-dim); font-size: 0.9rem; }
+
+/* ---------- 日志/档案列表 ---------- */
+.post-list { list-style: none; margin: 1.5rem 0; padding: 0; display: grid; gap: 0.5rem; }
+.post-list a {
+  display: flex;
+  gap: 1rem;
+  align-items: baseline;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.post-list a:hover { background: var(--bg-soft); }
+.post-list time { color: var(--text-dim); font-size: 0.85rem; flex: none; font-variant-numeric: tabular-nums; }
+.post-list a:hover span { color: var(--mood); }
+
+/* ---------- 正文排版 ---------- */
+.prose { padding-top: 2rem; }
+.prose h1 { font-size: 1.9rem; line-height: 1.3; margin: 0 0 0.5rem; }
+.prose h2 { margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
+.prose a { color: var(--mood); }
+.prose img { max-width: 100%; border-radius: 0.5rem; }
+.prose code {
+  background: var(--bg-soft);
+  padding: 0.15em 0.4em;
+  border-radius: 0.3rem;
+  font-size: 0.9em;
+}
+.prose pre { padding: 1rem; border-radius: 0.75rem; overflow-x: auto; border: 1px solid var(--border); }
+.prose pre code { background: none; padding: 0; }
+.prose blockquote {
+  margin: 1.5rem 0;
+  padding: 0.25rem 1rem;
+  border-left: 3px solid var(--mood);
+  color: var(--text-dim);
+}
+.post-meta { color: var(--text-dim); font-size: 0.85rem; margin: 0 0 2rem; }
+
+.empty-state { color: var(--text-dim); padding: 3rem 0; text-align: center; }

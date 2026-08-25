@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import LinkCard from '../components/LinkCard.astro';
+import { EMAIL, GITHUB_URL } from '../consts';
+---
+<BaseLayout mood="calm">
+  <section class="hero">
+    <p class="hero-kicker">深海海蛞蝓 × 白色犬兽人 · 共生体 OC</p>
+    <h1 class="hero-title">涟 <span lang="en">Lian</span></h1>
+    <p class="hero-sub">在潮间带与梦境之间，记录一只蛞蝓小狗的研究手记。</p>
+  </section>
+
+  <section class="link-grid" aria-label="社交链接">
+    <LinkCard href={GITHUB_URL} label="GitHub" value="@HeyuChick" icon="github" external />
+    <LinkCard href={`mailto:${EMAIL}`} label="邮箱" value={EMAIL} icon="mail" />
+  </section>
+
+  <section class="modules">
+    <a class="module-card" href="/blog/">
+      <h2>研究员日志</h2>
+      <p>开发笔记、世界观随笔与构建记录</p>
+    </a>
+    <a class="module-card" href="/archive/">
+      <h2>涟的档案</h2>
+      <p>OC 设定集（从 Obsidian 精选公开）</p>
+    </a>
+  </section>
+</BaseLayout>

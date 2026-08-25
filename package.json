@@ -1,0 +1,22 @@
+{
+  "name": "lian-site",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "deploy": "astro build && wrangler deploy",
+    "sync:archive": "node scripts/sync-archive.mjs"
+  },
+  "dependencies": {
+    "astro": "^5.12.0"
+  },
+  "devDependencies": {
+    "@astrojs/mdx": "^4.2.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.0.0"
+  }
+}

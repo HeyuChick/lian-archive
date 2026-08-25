@@ -1,0 +1,37 @@
+---
+// 史莱姆涟漪：指针按下时扩散的黏液波纹（零依赖，尊重减少动态偏好）
+---
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduceMotion) {
+    document.addEventListener('pointerdown', (e) => {
+      const ripple = document.createElement('span');
+      ripple.className = 'slime-ripple';
+      ripple.style.left = `${e.clientX}px`;
+      ripple.style.top = `${e.clientY}px`;
+      document.body.appendChild(ripple);
+      ripple.addEventListener('animationend', () => ripple.remove());
+    });
+  }
+</script>
+<style>
+  :global(.slime-ripple) {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--mood, #7fb8a4);
+    opacity: 0.35;
+    filter: blur(1px);
+    pointer-events: none;
+    transform: translate(-50%, -50%) scale(1);
+    animation: slime-spread 0.9s ease-out forwards;
+    z-index: 9999;
+  }
+  @keyframes slime-spread {
+    to {
+      transform: translate(-50%, -50%) scale(14);
+      opacity: 0;
+    }
+  }
+</style>

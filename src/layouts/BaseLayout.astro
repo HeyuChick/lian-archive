@@ -1,0 +1,44 @@
+---
+import '../styles/global.css';
+import { SITE_TITLE, SITE_DESCRIPTION, DEFAULT_LOCALE, HTML_LANG, MOODS, type Locale, type Mood } from '../consts';
+import { t } from '../i18n/ui';
+import LangSwitcher from '../components/LangSwitcher.astro';
+import SlimeRipple from '../components/SlimeRipple.astro';
+
+interface Props {
+  title?: string;
+  description?: string;
+  locale?: Locale;
+  mood?: Mood;
+}
+
+const { title, description = SITE_DESCRIPTION, locale = DEFAULT_LOCALE, mood = 'calm' } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE_TITLE}` : SITE_TITLE;
+const strings = t(locale);
+const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
+---
+<!doctype html>
+<html lang={HTML_LANG[locale]} style={`--mood: ${MOODS[mood].color}`}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="site-title" href={homeHref}>{SITE_TITLE}</a>
+      <nav class="site-nav">
+        <a href="/blog/">{strings['nav.blog']}</a>
+        <a href="/archive/">{strings['nav.archive']}</a>
+        <LangSwitcher current={locale} />
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">© 2026 HeyuChick · 涟（Lian）</footer>
+    <SlimeRipple />
+  </body>
+</html>

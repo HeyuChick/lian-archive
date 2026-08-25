@@ -1,0 +1,26 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('archive', ({ data }) => data.publish);
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+---
+<BaseLayout title={entry.data.title} mood={entry.data.mood}>
+  <article class="prose">
+    <h1>{entry.data.title}</h1>
+    {entry.data.updated && (
+      <p class="post-meta">
+        更新于 <time datetime={entry.data.updated.toISOString()}>{entry.data.updated.toLocaleDateString('zh-CN')}</time>
+      </p>
+    )}
+    <Content />
+  </article>
+</BaseLayout>

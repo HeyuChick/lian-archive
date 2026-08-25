@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { MOODS } from '../../consts';
+
+const entries = (await getCollection('archive', ({ data }) => data.publish)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+---
+<BaseLayout title="涟的档案">
+  <section class="prose">
+    <h1>涟的档案</h1>
+  </section>
+  {entries.length === 0 ? (
+    <p class="empty-state">档案整理中，敬请期待。</p>
+  ) : (
+    <ul class="post-list">
+      {entries.map((entry) => (
+        <li>
+          <a href={`/archive/${entry.id}/`} style={`--mood: ${MOODS[entry.data.mood].color}`}>
+            <span>{entry.data.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  )}
+</BaseLayout>
