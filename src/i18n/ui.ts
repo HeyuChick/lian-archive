@@ -14,7 +14,7 @@ export const ui = {
     'archive.kicker': 'ARCHIVE // SPECIMEN-08',
     'archive.title': '样本档案',
     'archive.empty': '该分区档案尚未解密，请等待权限开放。',
-    'footer.note': 'SPECIMEN-08 · 档案持续归档中',
+    'footer.note': 'SPECIMEN-08 · 持续观测',
   },
   en: {
     'site.title': 'The Archive',
@@ -29,7 +29,7 @@ export const ui = {
     'archive.kicker': 'ARCHIVE // SPECIMEN-08',
     'archive.title': 'Specimen Archive',
     'archive.empty': 'Documents in this section remain classified. Clearance pending.',
-    'footer.note': 'SPECIMEN-08 · ARCHIVAL IN PROGRESS',
+    'footer.note': 'SPECIMEN-08 · UNDER OBSERVATION',
   },
   ja: {
     'site.title': 'アーカイブ',
@@ -44,7 +44,7 @@ export const ui = {
     'archive.kicker': 'アーカイブ // SPECIMEN-08',
     'archive.title': 'サンプル档案',
     'archive.empty': 'この区画の档案は未解封です。権限の开放をお待ちください。',
-    'footer.note': 'SPECIMEN-08 · アーカイブ作業中',
+    'footer.note': 'SPECIMEN-08 · 観測継続中',
   },
 } as const;
 

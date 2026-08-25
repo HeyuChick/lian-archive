@@ -80,7 +80,8 @@ body {
 a { color: inherit; }
 
 /* ============================================================
-   悬浮光标（移植自主站，仅精确指针设备启用）
+   悬浮光标：圆点（默认）/ 放大（可交互）/ 竖线（文本）
+   系统光标全程禁用
    ============================================================ */
 body.has-cursor,
 body.has-cursor * {
@@ -101,14 +102,24 @@ body.has-cursor * {
   transition:
     opacity .3s ease,
     background-color .8s ease,
+    border-radius .25s ease,
     width .25s ease, height .25s ease, margin .25s ease;
 }
 .cursor-dot.visible { opacity: .9; }
+/* 可交互态：放大半透明 */
 .cursor-dot.hovering {
   width: 20px;
   height: 20px;
   margin: -10px 0 0 -10px;
   opacity: .5;
+}
+/* 文本态：I-beam 竖线 */
+.cursor-dot.text {
+  width: 2px;
+  height: 18px;
+  margin: -9px 0 0 -1px;
+  border-radius: 1px;
+  opacity: .9;
 }
 @media (prefers-reduced-motion: reduce) {
   .cursor-dot { display: none; }
@@ -157,7 +168,7 @@ body.has-cursor * {
 }
 .site-nav > a:hover { color: var(--text); }
 
-/* 语言切换：胶囊样式（与主站一致） */
+/* 语言切换：胶囊样式（与主站一致）；不声明 cursor，由自定义光标接管 */
 .lang-switcher {
   display: flex;
   gap: 2px;
@@ -175,7 +186,6 @@ body.has-cursor * {
   border-radius: 999px;
   background: transparent;
   color: var(--text-faint);
-  cursor: pointer;
   transition: color .2s, background .2s;
 }
 .lang-switcher .lang-btn:hover { color: var(--text-dim); }

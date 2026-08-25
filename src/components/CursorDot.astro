@@ -1,6 +1,6 @@
 ---
-// 悬浮光标：跟随圆点，悬停可交互元素时放大，颜色随情绪显色漂移
-// 仅精确指针设备启用；reduced-motion 停用
+// 悬浮光标：三形态——圆点（默认）/ 放大（可交互）/ 竖线（文本）
+// 颜色随情绪显色漂移；系统光标全程禁用；仅精确指针设备启用
 ---
 <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
 
@@ -31,8 +31,16 @@
 
     document.addEventListener('mouseover', (e) => {
       const t = e.target;
-      dot.classList.toggle('hovering',
-        !!(t instanceof Element && t.closest('a, button')));
+      if (!(t instanceof Element)) return;
+
+      /* 优先级：可交互 > 文本 > 默认 */
+      const interactive = t.closest('a, button, input, textarea, select, [role="button"]');
+      const textZone = t.closest(
+        '.prose, p, h1, h2, h3, h4, h5, h6, li, blockquote, code, pre, time'
+      );
+
+      dot.classList.toggle('hovering', !!interactive);
+      dot.classList.toggle('text', !interactive && !!textZone);
     });
 
     (function follow() {
