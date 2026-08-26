@@ -16,10 +16,15 @@ sync_archive.py —— 将 Obsidian vault 中的档案同步到网站内容集�
        title   —— 从正文第一个 H1 提取，无则用文件名
        order   —— 从文件名前导数字提取（01_xxx.md → 1），无则 0
        mood    —— 默认 calm
-       publish —— 默认 true；在 vault 里写 publish: false 可不上线
   4. 保持文件夹结构写入 src/content/archive/
 
-vault 里的 frontmatter 原样保留（type/character/tags 等字段在构建时会被 schema 自动剥离）。
+公开控制（默认不公开）：
+  - 脚本【不会】自动补 publish 字段；缺 publish 的文档在生产构建中不上线
+    （npm run dev 本地预览仍可见，方便检查排版）
+  - 想公开某篇：在 vault 中该文档的 frontmatter 手动写  publish: true
+  - 三层控制：_ 前缀文件/目录不同步；publish: false 同步但不上线；publish: true 上线
+
+vault 里的 frontmatter 原样保留（type/character/tags 等字段在构建时会被 schema 剥离）。
 URL 即文件路径：01_设定/01_基础信息.md → /archive/01_设定/01_基础信息/
 """
 
@@ -65,8 +70,7 @@ def convert(src: Path, rel: Path) -> str:
         additions.append(f"order: {int(m.group(1)) if m else 0}")
     if not fm_has(fm, "mood"):
         additions.append("mood: calm")
-    if not fm_has(fm, "publish"):
-        additions.append("publish: true")
+    # publish 刻意不补：默认不公开，需在 vault 中手动写 publish: true
 
     fm_out = (fm.rstrip() + "\n" + "\n".join(additions)).strip("\n")
     return f"---\n{fm_out}\n---\n{body}"
@@ -93,10 +97,16 @@ def main() -> int:
         return 1
 
     added = updated = unchanged = 0
+    unpublished: list[str] = []
     for src in sources:
         rel = src.relative_to(vault)
         dest = CONTENT_DIR / rel
         out = convert(src, rel)
+
+        # 提醒未公开的文档（缺 publish 字段或显式 false）
+        fm, _ = split_frontmatter(out)
+        if not re.search(r"^publish:\s*true\s*$", fm, re.MULTILINE):
+            unpublished.append(str(rel))
 
         if dest.exists() and dest.read_text(encoding="utf-8") == out:
             unchanged += 1
@@ -112,6 +122,10 @@ def main() -> int:
             print(f"  + {rel}")
 
     print(f"\n同步完成：新增 {added} / 更新 {updated} / 不变 {unchanged}")
+    if unpublished:
+        print(f"\n以下 {len(unpublished)} 篇【不会上线】（frontmatter 中写 publish: true 可公开）：")
+        for p in unpublished:
+            print(f"  ○ {p}")
 
     if args.push:
         subprocess.run(["git", "add", "src/content/archive"], cwd=REPO_ROOT, check=True)
