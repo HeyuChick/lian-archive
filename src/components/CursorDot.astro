@@ -1,53 +1,65 @@
 ---
-// 悬浮光标：三形态——圆点（默认）/ 放大（可交互）/ 竖线（文本）
-// 颜色随情绪显色漂移；系统光标全程禁用；仅精确指针设备启用
+// CursorDot —— 自定义光标
+// transition:persist：客户端路由切换页面时元素原样保留，不销毁不重建，
+// 位置与事件监听天然连续，从根本上消除跨页面光标跳动。
 ---
-<div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+<div class="cursor-dot" transition:persist></div>
 
 <script>
-  (function initCursor() {
+  const INTERACTIVE_SELECTOR = 'a, button, [data-cursor="hover"]';
+  const TEXT_SELECTOR = 'p, h1, h2, h3, h4, h5, h6, span, li, time, blockquote, td, th, figcaption';
+
+  function initCursor(): void {
+    // 触摸设备 / 减弱动画：不激活（has-cursor 不加，系统光标保留）
+    if (window.matchMedia('(pointer: coarse)').matches) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (!window.matchMedia('(pointer: fine)').matches) return;
 
-    const dot = document.getElementById('cursorDot');
-    if (!dot) return;
-    document.body.classList.add('has-cursor');
+    const cursor = document.querySelector<HTMLElement>('.cursor-dot');
+    if (!cursor) return;
+    // 持久化元素跨页面存活，脚本只初始化一次
+    if (cursor.dataset.ready) return;
+    cursor.dataset.ready = '1';
 
-    let cx = -100, cy = -100, tx = -100, ty = -100, shown = false;
+    // NaN 标记“尚未初始化”，首次移动直接吸附而非从原点缓动
+    let x = NaN;
+    let y = NaN;
+    let lastX = 0;
+    let lastY = 0;
 
-    window.addEventListener('pointermove', (e) => {
-      tx = e.clientX;
-      ty = e.clientY;
-      if (!shown) {
-        shown = true;
-        dot.classList.add('visible');
+    document.addEventListener('mousemove', (e) => {
+      lastX = e.clientX;
+      lastY = e.clientY;
+      if (Number.isNaN(x)) {
+        x = lastX;
+        y = lastY;
       }
+      if (!cursor.classList.contains('visible')) cursor.classList.add('visible');
+
+      const target = e.target as Element | null;
+      const isInteractive = !!target?.closest?.(INTERACTIVE_SELECTOR);
+      const isText = !isInteractive && !!target?.closest?.(TEXT_SELECTOR);
+      cursor.classList.toggle('hovering', isInteractive);
+      cursor.classList.toggle('text', isText);
     });
 
-    document.addEventListener('pointerleave', () => {
-      shown = false;
-      dot.classList.remove('visible');
-    });
+    // lerp 缓动跟随（每帧写入，代价仅一次 transform 更新）
+    const loop = () => {
+      if (!Number.isNaN(x)) {
+        x += (lastX - x) * 0.2;
+        y += (lastY - y) * 0.2;
+        cursor.style.transform = `translate(${x}px, ${y}px)`;
+      }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }
 
-    document.addEventListener('mouseover', (e) => {
-      const t = e.target;
-      if (!(t instanceof Element)) return;
+  function boot(): void {
+    initCursor();
+    // body 在导航后可能被替换，每次页面加载后重新断言
+    document.body.classList.add('has-cursor');
+  }
 
-      /* 优先级：可交互 > 文本 > 默认 */
-      const interactive = t.closest('a, button, input, textarea, select, [role="button"]');
-      const textZone = t.closest(
-        '.prose, p, h1, h2, h3, h4, h5, h6, li, blockquote, code, pre, time'
-      );
-
-      dot.classList.toggle('hovering', !!interactive);
-      dot.classList.toggle('text', !interactive && !!textZone);
-    });
-
-    (function follow() {
-      cx += (tx - cx) * 0.18;
-      cy += (ty - cy) * 0.18;
-      dot.style.transform = `translate(${cx}px, ${cy}px)`;
-      requestAnimationFrame(follow);
-    })();
-  })();
+  boot();
+  document.addEventListener('astro:page-load', boot);
 </script>
