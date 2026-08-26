@@ -2,6 +2,7 @@
 // CursorDot —— 自定义光标
 // transition:persist：客户端路由切换页面时元素原样保留，不销毁不重建，
 // 位置与事件监听天然连续，从根本上消除跨页面光标跳动。
+// has-cursor 挂在 <html>：根元素永不替换，视图过渡期间指针命中任何元素都被覆盖。
 ---
 <div class="cursor-dot" transition:persist></div>
 
@@ -19,6 +20,9 @@
     // 持久化元素跨页面存活，脚本只初始化一次
     if (cursor.dataset.ready) return;
     cursor.dataset.ready = '1';
+
+    // 光标确实激活后才隐藏系统光标，挂 <html> 上永不丢失
+    document.documentElement.classList.add('has-cursor');
 
     // NaN 标记“尚未初始化”，首次移动直接吸附而非从原点缓动
     let x = NaN;
@@ -56,11 +60,8 @@
 
   function boot(): void {
     initCursor();
-    // body 在导航后会被替换，交换完成后立刻重新打上 has-cursor，避免系统光标闪现
-    document.body.classList.add('has-cursor');
   }
 
   boot();
-  document.addEventListener('astro:after-swap', boot);
   document.addEventListener('astro:page-load', boot);
 </script>
