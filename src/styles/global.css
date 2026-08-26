@@ -43,9 +43,9 @@
   --sp-6: 24px; --sp-8: 32px;  --sp-12: 48px; --sp-16: 64px;
 
   /* ---------- 负空间 ----------
-     下限 16px 面向窄屏：移动端不过度挤压内容宽度；
-     9vw / 120px 上限保持宽屏的大边距。 */
-  --page-pad-x: clamp(16px, 9vw, 120px);
+     宽屏：9vw 弹性边距，上限 120px（与主站一致）；
+     窄屏：9vw 在手机上约 36px 仍然偏大，由下方媒体查询覆盖。 */
+  --page-pad-x: clamp(24px, 9vw, 120px);
   --page-pad-y: clamp(16px, 3vh, 32px);
 
   /* ---------- 内容宽度（与主站一致） ---------- */
@@ -393,6 +393,10 @@ main {
    响应式
    ============================================================ */
 @media (max-width: 720px) {
+  :root {
+    /* 手机上 9vw 约 36px 仍然偏大，固定收窄为 16px */
+    --page-pad-x: 16px;
+  }
   .module-name { min-width: 0; }
   .module-meta { display: none; }
   .site-nav > a { display: none; } /* 移动端只留语言切换 */
