@@ -56,10 +56,11 @@
 
   function boot(): void {
     initCursor();
-    // body 在导航后可能被替换，每次页面加载后重新断言
+    // body 在导航后会被替换，交换完成后立刻重新打上 has-cursor，避免系统光标闪现
     document.body.classList.add('has-cursor');
   }
 
   boot();
+  document.addEventListener('astro:after-swap', boot);
   document.addEventListener('astro:page-load', boot);
 </script>

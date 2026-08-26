@@ -2,12 +2,13 @@
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import { SITE_TITLE, SITE_DESCRIPTION, DEFAULT_LOCALE, HTML_LANG, MOODS, type Locale, type Mood } from '../consts';
-import { t, ui } from '../i18n/ui';
+import { t } from '../i18n/ui';
 import LangSwitcher from '../components/LangSwitcher.astro';
 import SlimeRipple from '../components/SlimeRipple.astro';
 import AWaves from '../components/AWaves.astro';
 import EmotionField from '../components/EmotionField.astro';
 import CursorDot from '../components/CursorDot.astro';
+import I18nScript from '../components/I18nScript.astro';
 
 interface Props {
   title?: string;
@@ -69,43 +70,7 @@ const emoRgb = EMO_RGB[mood] ?? EMO_RGB.calm;
     <EmotionField transition:persist />
     <CursorDot />
 
-    {/* 客户端 i18n：读取 localStorage 持久化语言选择，全站 UI 即时切换 */}
-    {/* is:inline 脚本在客户端路由的每次导航后都会重跑，新页面的 data-i18n 文本与按钮状态会被重新应用 */}
-    <script is:inline define:vars={{ uiDict: ui }}>
-      (function () {
-        var HTML_LANG = { zh: 'zh-CN', en: 'en', ja: 'ja' };
-        var buttons = document.querySelectorAll('.lang-btn');
-
-        function apply(lang) {
-          var dict = uiDict[lang];
-          if (!dict) return;
-          document.documentElement.lang = HTML_LANG[lang] || lang;
-          document.querySelectorAll('[data-i18n]').forEach(function (el) {
-            var key = el.getAttribute('data-i18n');
-            if (dict[key] !== undefined) el.textContent = dict[key];
-          });
-          buttons.forEach(function (b) {
-            b.classList.toggle('is-active', b.getAttribute('data-lang') === lang);
-          });
-          localStorage.setItem('lian-lang', lang);
-        }
-
-        buttons.forEach(function (b) {
-          b.addEventListener('click', function () {
-            apply(b.getAttribute('data-lang'));
-          });
-        });
-
-        var saved = localStorage.getItem('lian-lang');
-        if (saved && uiDict[saved]) {
-          apply(saved);
-        } else {
-          var nav = (navigator.language || '').toLowerCase();
-          if (nav.indexOf('ja') === 0) apply('ja');
-          else if (nav.indexOf('en') === 0) apply('en');
-          else apply('zh');
-        }
-      })();
-    </script>
+    {/* 客户端 i18n：共享组件，主站可复用 */}
+    <I18nScript />
   </body>
 </html>
