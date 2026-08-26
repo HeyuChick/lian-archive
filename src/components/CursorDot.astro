@@ -2,7 +2,11 @@
 // CursorDot —— 自定义光标
 // transition:persist：客户端路由切换页面时元素原样保留，不销毁不重建，
 // 位置与事件监听天然连续，从根本上消除跨页面光标跳动。
-// has-cursor 挂在 <html>：根元素永不替换，视图过渡期间指针命中任何元素都被覆盖。
+//
+// has-cursor 挂在 <html>：后代选择器覆盖包括根元素在内的所有元素。
+// 注意：路由交换会同步 <html> 的属性（lang / data-emo / style / class），
+// has-cursor 会在导航时被清空——因此每次 after-swap 后都必须重新补回，
+// 与“脚本只初始化一次”的防重逻辑解耦。
 ---
 <div class="cursor-dot" transition:persist></div>
 
@@ -17,51 +21,52 @@
 
     const cursor = document.querySelector<HTMLElement>('.cursor-dot');
     if (!cursor) return;
-    // 持久化元素跨页面存活，脚本只初始化一次
-    if (cursor.dataset.ready) return;
-    cursor.dataset.ready = '1';
 
-    // 光标确实激活后才隐藏系统光标，挂 <html> 上永不丢失
-    document.documentElement.classList.add('has-cursor');
+    // 事件监听与动画循环只初始化一次（持久化元素跨页面存活）
+    if (!cursor.dataset.ready) {
+      cursor.dataset.ready = '1';
 
-    // NaN 标记“尚未初始化”，首次移动直接吸附而非从原点缓动
-    let x = NaN;
-    let y = NaN;
-    let lastX = 0;
-    let lastY = 0;
+      // NaN 标记“尚未初始化”，首次移动直接吸附而非从原点缓动
+      let x = NaN;
+      let y = NaN;
+      let lastX = 0;
+      let lastY = 0;
 
-    document.addEventListener('mousemove', (e) => {
-      lastX = e.clientX;
-      lastY = e.clientY;
-      if (Number.isNaN(x)) {
-        x = lastX;
-        y = lastY;
-      }
-      if (!cursor.classList.contains('visible')) cursor.classList.add('visible');
+      document.addEventListener('mousemove', (e) => {
+        lastX = e.clientX;
+        lastY = e.clientY;
+        if (Number.isNaN(x)) {
+          x = lastX;
+          y = lastY;
+        }
+        if (!cursor.classList.contains('visible')) cursor.classList.add('visible');
 
-      const target = e.target as Element | null;
-      const isInteractive = !!target?.closest?.(INTERACTIVE_SELECTOR);
-      const isText = !isInteractive && !!target?.closest?.(TEXT_SELECTOR);
-      cursor.classList.toggle('hovering', isInteractive);
-      cursor.classList.toggle('text', isText);
-    });
+        const target = e.target as Element | null;
+        const isInteractive = !!target?.closest?.(INTERACTIVE_SELECTOR);
+        const isText = !isInteractive && !!target?.closest?.(TEXT_SELECTOR);
+        cursor.classList.toggle('hovering', isInteractive);
+        cursor.classList.toggle('text', isText);
+      });
 
-    // lerp 缓动跟随（每帧写入，代价仅一次 transform 更新）
-    const loop = () => {
-      if (!Number.isNaN(x)) {
-        x += (lastX - x) * 0.2;
-        y += (lastY - y) * 0.2;
-        cursor.style.transform = `translate(${x}px, ${y}px)`;
-      }
+      // lerp 缓动跟随（每帧写入，代价仅一次 transform 更新）
+      const loop = () => {
+        if (!Number.isNaN(x)) {
+          x += (lastX - x) * 0.2;
+          y += (lastY - y) * 0.2;
+          cursor.style.transform = `translate(${x}px, ${y}px)`;
+        }
+        requestAnimationFrame(loop);
+      };
       requestAnimationFrame(loop);
-    };
-    requestAnimationFrame(loop);
+    }
+
+    // 补 class 与初始化防重解耦：路由交换会清空 <html> 的 class，
+    // 每次调用都必须重新断言，否则导航后系统光标全程回归
+    document.documentElement.classList.add('has-cursor');
   }
 
-  function boot(): void {
-    initCursor();
-  }
-
-  boot();
-  document.addEventListener('astro:page-load', boot);
+  initCursor();
+  // after-swap：交换刚完成、新页面尚未绘制时补回 class，消除闪现窗口
+  document.addEventListener('astro:after-swap', initCursor);
+  document.addEventListener('astro:page-load', initCursor);
 </script>
