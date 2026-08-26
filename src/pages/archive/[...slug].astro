@@ -1,26 +1,62 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { MOODS } from '../../consts';
+import {
+  entryPath,
+  entryTitle,
+  splitId,
+  isFolderIndex,
+  backlinksOf,
+  type ArchiveEntry,
+} from '../../lib/archive';
 
 export async function getStaticPaths() {
-  const entries = await getCollection('archive', ({ data }) => data.publish);
-  return entries.map((entry) => ({
-    params: { slug: entry.id },
-    props: { entry },
+  const entries = await getCollection(
+    'archive',
+    ({ data }) => (import.meta.env.PROD ? data.publish : true),
+  );
+  const visible = entries.filter((e) => !isFolderIndex(e));
+  return visible.map((entry) => ({
+    params: { slug: entryPath(entry) },
+    props: { entry, all: visible },
   }));
 }
 
-const { entry } = Astro.props;
+interface Props {
+  entry: ArchiveEntry;
+  all: ArchiveEntry[];
+}
+
+const { entry, all } = Astro.props;
 const { Content } = await render(entry);
+
+const title = entryTitle(entry);
+const { folders } = splitId(entry.id);
+const backlinks = backlinksOf(entry, all);
+const mood = (entry.data.mood || 'calm') as any;
 ---
-<BaseLayout title={entry.data.title} mood={entry.data.mood}>
-  <article class="prose">
-    <h1>{entry.data.title}</h1>
-    {entry.data.updated && (
+<BaseLayout title={title} mood={mood}>
+  <article class="prose" style={`--mood: ${(MOODS as Record<string, { color: string }>)[entry.data.mood]?.color ?? 'rgb(94, 234, 212)'}`}>
+    {folders.length > 0 && (
       <p class="post-meta">
-        更新于 <time datetime={entry.data.updated.toISOString()}>{entry.data.updated.toLocaleDateString('zh-CN')}</time>
+        <a href="/archive/" style="text-decoration:none;color:inherit">ARCHIVE</a>
+        {' / ' + folders.join(' / ')}
       </p>
     )}
     <Content />
+
+    {backlinks.length > 0 && (
+      <section class="backlinks">
+        <h2>◈ 被引用于</h2>
+        <ul>
+          {backlinks.map((from) => (
+            <li>
+              <a href={`/archive/${entryPath(from)}/`}>{entryTitle(from)}</a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
   </article>
 </BaseLayout>

@@ -390,6 +390,72 @@ main {
 }
 
 /* ============================================================
+   档案馆：文件夹分组 / 双链 / callout / 反向链接
+   ============================================================ */
+.folder-group { margin-bottom: 2.5rem; }
+.folder-title {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: .25em;
+  color: var(--text-faint);
+  margin: 0 0 .25rem;
+}
+
+/* wiki 双链：虚线下划线，悬停跟随当前文章情绪色 */
+.prose a.wikilink {
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px dashed var(--mood);
+  transition: color .2s;
+}
+.prose a.wikilink:hover { color: var(--mood); }
+/* 未解析双链：暗红虚线，不可点击 */
+.wikilink-broken {
+  color: var(--text-faint);
+  border-bottom: 1px dashed rgba(248, 113, 113, .6);
+}
+
+/* Obsidian callout 卡片 */
+.callout {
+  margin: 1.5rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--mood);
+  border-radius: 0.5rem;
+  background: var(--bg-soft);
+}
+.callout-title {
+  font-weight: 700;
+  color: var(--mood);
+  margin: 0 0 0.25rem;
+}
+.callout p:last-child { margin-bottom: 0; }
+.callout p:first-child { margin-top: 0; }
+
+/* 反向链接 */
+.backlinks {
+  margin-top: 3rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+.backlinks h2 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-faint);
+  border: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+.backlinks ul { list-style: none; padding: 0; margin: 0; }
+.backlinks a {
+  color: var(--text-dim);
+  text-decoration: none;
+  transition: color .2s;
+}
+.backlinks a:hover { color: var(--mood); }
+
+/* ============================================================
    响应式
    ============================================================ */
 @media (max-width: 720px) {

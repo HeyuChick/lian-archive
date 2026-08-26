@@ -1,31 +1,52 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
+import { MOODS } from '../../consts';
+import { entryPath, entryTitle, groupByFolder, isFolderIndex } from '../../lib/archive';
 
-const entries = (await getCollection('archive', ({ data }) => data.publish)).sort(
-  (a, b) => a.data.order - b.data.order,
+const entries = await getCollection(
+  'archive',
+  ({ data }) => (import.meta.env.PROD ? data.publish : true),
 );
+const visible = entries.filter((e) => !isFolderIndex(e));
+const groups = groupByFolder(visible);
 
-/* 档案编号：DOC-01、DOC-02…… 按 order 顺序生成 */
-const docNo = (n: number) => `DOC-${String(n + 1).padStart(2, '0')}`;
+const moodColor = (mood: string) =>
+  (MOODS as Record<string, { color: string }>)[mood]?.color ?? 'rgb(94, 234, 212)';
 ---
-<BaseLayout title="样本档案">
-  <header class="page-head">
-    <p class="page-kicker" data-i18n="archive.kicker">ARCHIVE // SPECIMEN-08</p>
-    <h1 class="page-title" data-i18n="archive.title">样本档案</h1>
-  </header>
-  {entries.length === 0 ? (
-    <p class="empty-state" data-i18n="archive.empty">该分区档案尚未解密，请等待权限开放。</p>
-  ) : (
-    <ul class="post-list">
-      {entries.map((entry, i) => (
-        <li>
-          <a class="post-row" href={`/archive/${entry.id}/`}>
-            <span class="post-title">{entry.data.title}</span>
-            <span class="post-doc">{docNo(i)}</span>
-          </a>
-        </li>
-      ))}
-    </ul>
-  )}
+<BaseLayout title="档案馆">
+  <section>
+    <header class="page-head">
+      <p class="page-kicker">SPECIMEN ARCHIVE</p>
+      <h1 class="page-title">样本档案</h1>
+    </header>
+
+    {visible.length === 0 ? (
+      <p class="empty-state">// 暂无公开档案 //</p>
+    ) : (
+      groups.map(({ folder, items }) => (
+        <section class="folder-group">
+          {folder && <p class="folder-title">{folder}</p>}
+          <ul class="post-list">
+            {items.map((entry) => (
+              <li>
+                <a
+                  class="post-row"
+                  href={`/archive/${entryPath(entry)}/`}
+                  style={`--mood: ${moodColor(entry.data.mood)}`}
+                >
+                  <span class="post-title">{entryTitle(entry)}</span>
+                  {entry.data.updated && (
+                    <time class="post-date" datetime={entry.data.updated.toISOString()}>
+                      {entry.data.updated.toLocaleDateString('zh-CN')}
+                    </time>
+                  )}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    )}
+  </section>
 </BaseLayout>
