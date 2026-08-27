@@ -356,11 +356,12 @@ main {
 }
 
 /* ============================================================
-   正文排版：外层对齐主站宽度，文本列保持阅读宽度
+   正文排版：外层对齐主站宽度，文本列保持阅读宽度并水平居中
    ============================================================ */
 .prose {
   padding-top: 1rem;
   max-width: var(--prose-w);
+  margin-inline: auto; /* 宽于正文列的容器中居中，消除重心偏移 */
 }
 .prose h1 { font-size: 1.9rem; line-height: 1.3; margin: 0 0 0.5rem; }
 .prose h2 { margin-top: 2.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.3rem; }
