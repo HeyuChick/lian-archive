@@ -374,7 +374,11 @@ main {
   font-size: 0.9em;
   font-family: var(--font-mono);
 }
-.prose pre { padding: 1rem; overflow-x: auto; }
+.prose pre {
+  padding: 1rem;
+  overflow-x: auto;
+  margin: 0; /* 清除浏览器默认上下 margin，避免 code-block 容器内撑出黑条 */
+}
 .prose pre code { background: none; padding: 0; }
 .prose blockquote {
   margin: 1.5rem 0;
