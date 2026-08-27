@@ -1,11 +1,16 @@
 /**
- * remark-archive —— 档案馆 Markdown 处理插件（三合一）
+ * remark-archive —— 档案馆 Markdown 处理插件
  *
- * 1. 剥离 oc-sync 同步标记注释（<!-- oc-sync:... -->）
- * 2. Obsidian callout：> [!info] 标题  →  带类型 class 的卡片
- * 3. Obsidian 双链：[[页面名]] / [[页面名|别名显示]]
- *    - 按“文件名（不含文件夹与扩展名）+ frontmatter aliases”全局解析，与 Obsidian 一致
- *    - 命中 → <a class="wikilink">；未命中 → <span class="wikilink-broken">（写了对应文章后重建自动激活）
+ * remark 层：
+ *  1. 剥离 oc-sync 同步标记注释（<!-- oc-sync:... -->）
+ *  2. Obsidian callout：> [!info] 标题  →  带类型 class 的卡片
+ *  3. Obsidian 双链：[[页面名]] / [[页面名|别名显示]]
+ *     - 按“文件名（不含文件夹与扩展名）+ frontmatter aliases”全局解析，与 Obsidian 一致
+ *     - 命中 → <a class="wikilink">；未命中 → <span class="wikilink-broken">（写了对应文章后重建自动激活）
+ *
+ * rehype 层：
+ *  4. rehypeCodeBlocks：pre 包进 .code-block 容器，顶部 header 显示语言名 + 复制按钮
+ *  5. rehypeTables：table 包进 .table-wrap（移动端横向滚动，斑马纹/边框由 CSS 提供）
  *
  * 注意：双链索引不经过 astro:content（避免集合加载循环依赖），
  * 直接用 import.meta.glob 读取原始 md 建立映射。
@@ -13,6 +18,9 @@
 
 import { visit, SKIP } from 'unist-util-visit';
 import type { Root, Blockquote, Text, Link, Html, Parent } from 'mdast';
+import type { Root as HRoot, Element as HElement, ElementContent } from 'hast';
+
+/* ==================== remark：双链 / callout / oc-sync ==================== */
 
 interface WikiTarget { path: string }
 
@@ -156,5 +164,74 @@ export function remarkArchive() {
     stripSyncMarkers(tree);
     transformCallouts(tree);
     resolveWikiLinks(tree, map);
+  };
+}
+
+/* ==================== rehype：代码块 / 表格 ==================== */
+
+/** 4) 代码块：包进 .code-block 容器，顶部 header 为语言名 + 复制按钮 */
+export function rehypeCodeBlocks() {
+  return (tree: HRoot) => {
+    visit(tree, 'element', (node: HElement, index, parent) => {
+      if (node.tagName !== 'pre' || !parent || typeof index !== 'number') return;
+      const code = node.children.find(
+        (c): c is HElement => c.type === 'element' && c.tagName === 'code',
+      );
+      if (!code) return;
+
+      // 语言名：优先 Shiki 输出的 data-language，回退 code 的 language-* class
+      let lang = (node.properties?.['dataLanguage'] as string) || '';
+      if (!lang) {
+        const cls = (code.properties?.className as string[]) ?? [];
+        const hit = cls.find((c) => c.startsWith('language-'));
+        if (hit) lang = hit.slice('language-'.length);
+      }
+
+      const header: HElement = {
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['code-header'] },
+        children: [
+          {
+            type: 'element',
+            tagName: 'span',
+            properties: { className: ['code-lang'] },
+            children: [{ type: 'text', value: lang || 'text' }],
+          },
+          {
+            type: 'element',
+            tagName: 'button',
+            properties: { className: ['code-copy'], type: 'button', 'aria-label': '复制代码' },
+            children: [{ type: 'text', value: 'copy' }],
+          },
+        ],
+      };
+
+      parent.children[index] = {
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['code-block'] },
+        children: [header, node],
+      } as ElementContent;
+      return [SKIP, index + 1];
+    });
+  };
+}
+
+/** 5) 表格：包进 .table-wrap（移动端横向滚动容器） */
+export function rehypeTables() {
+  return (tree: HRoot) => {
+    visit(tree, 'element', (node: HElement, index, parent) => {
+      if (node.tagName !== 'table' || !parent || typeof index !== 'number') return;
+      const parentCls = ((parent as HElement).properties?.className as string[]) ?? [];
+      if (parentCls.includes('table-wrap')) return; // 已包裹则跳过
+      parent.children[index] = {
+        type: 'element',
+        tagName: 'div',
+        properties: { className: ['table-wrap'] },
+        children: [node],
+      } as ElementContent;
+      return [SKIP, index + 1];
+    });
   };
 }

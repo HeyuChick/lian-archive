@@ -374,7 +374,7 @@ main {
   font-size: 0.9em;
   font-family: var(--font-mono);
 }
-.prose pre { padding: 1rem; border-radius: 0.75rem; overflow-x: auto; border: 1px solid var(--border); }
+.prose pre { padding: 1rem; overflow-x: auto; }
 .prose pre code { background: none; padding: 0; }
 .prose blockquote {
   margin: 1.5rem 0;
@@ -389,6 +389,74 @@ main {
   letter-spacing: .1em;
   margin: 0 0 2rem;
 }
+
+/* ============================================================
+   Markdown 增强：代码块（语言标签 + 复制按钮）/ 表格
+   ============================================================ */
+.code-block {
+  margin: 1.5rem 0;
+  border: 1px solid var(--line);
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+.code-block .code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.9rem;
+  background: var(--bg-soft);
+  border-bottom: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-faint);
+}
+.code-copy {
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  color: var(--text-faint);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 2px 8px;
+  transition: color .2s, border-color .2s;
+}
+.code-copy:hover { color: var(--text); border-color: var(--text-faint); }
+.code-copy.copied {
+  color: rgb(var(--emo-1));
+  border-color: rgb(var(--emo-1));
+}
+
+/* 表格：边框 + 表头样式 + 斑马纹 + 移动端横向滚动 */
+.prose .table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 1.5rem 0;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+}
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+.prose thead th {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  background: var(--bg-soft);
+  white-space: nowrap;
+}
+.prose th, .prose td {
+  padding: 0.5rem 0.8rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+.prose tbody tr:nth-child(even) { background: rgba(17, 17, 19, 0.6); }
+.prose tbody tr:last-child td { border-bottom: none; }
 
 /* ============================================================
    档案馆：文件夹分组 / 双链 / callout / 反向链接
