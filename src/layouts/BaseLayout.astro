@@ -25,11 +25,12 @@ const homeHref = locale === DEFAULT_LOCALE ? '/' : `/${locale}/`;
 
 /* 页面 mood → 情绪色阶锚点（data-emo）与初始 --goo-color */
 const EMO_INDEX: Record<string, number> = {
-  calm: 1, focus: 2, tense: 3, excited: 4, overload: 5,
+  calm: 1, focus: 2, warm: 2, tense: 3, gloom: 3, excited: 4, joy: 4, overload: 5,
 };
 const EMO_RGB: Record<string, string> = {
   calm: '94, 234, 212', focus: '103, 232, 249', tense: '167, 139, 250',
-  excited: '244, 114, 182', overload: '248, 113, 113',
+  warm: '103, 232, 249', gloom: '167, 139, 250', excited: '244, 114, 182',
+  joy: '244, 114, 182', overload: '248, 113, 113',
 };
 const emoIndex = EMO_INDEX[mood] ?? 1;
 const emoRgb = EMO_RGB[mood] ?? EMO_RGB.calm;

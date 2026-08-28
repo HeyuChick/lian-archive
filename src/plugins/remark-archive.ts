@@ -13,18 +13,34 @@
  *  5. rehypeTables：table 包进 .table-wrap（移动端横向滚动，斑马纹/边框由 CSS 提供）
  *
  * 注意：双链索引不经过 astro:content（避免集合加载循环依赖），
- * 直接用 import.meta.glob 读取原始 md 建立映射。
+ * 直接从生成后的 archive 内容目录读取原始 Markdown 建立映射。
  */
 
 import { visit, SKIP } from 'unist-util-visit';
 import type { Root, Blockquote, Text, Link, Html, Parent } from 'mdast';
 import type { Root as HRoot, Element as HElement, ElementContent } from 'hast';
+import { readdirSync, readFileSync } from 'node:fs';
+import { extname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /* ==================== remark：双链 / callout / oc-sync ==================== */
 
 interface WikiTarget { path: string }
 
 let wikiMap: Map<string, WikiTarget> | null = null;
+const ARCHIVE_ROOT = fileURLToPath(new URL('../content/archive/', import.meta.url));
+
+function archiveMarkdownFiles(dir: string): string[] {
+  const out: string[] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...archiveMarkdownFiles(path));
+    else if (entry.isFile() && ['.md', '.mdx'].includes(extname(entry.name).toLowerCase())) {
+      out.push(path);
+    }
+  }
+  return out;
+}
 
 /** 从原始 frontmatter 文本中提取单行标量字段 */
 function fmScalar(fm: string, key: string): string | undefined {
@@ -46,24 +62,20 @@ function buildWikiMap(): Map<string, WikiTarget> {
   if (wikiMap) return wikiMap;
   wikiMap = new Map();
 
-  const files = import.meta.glob('/src/content/archive/**/*.{md,mdx}', {
-    query: '?raw',
-    import: 'default',
-    eager: true,
-  }) as Record<string, string>;
-
-  for (const [file, raw] of Object.entries(files)) {
-    const rel = file.replace(/^\/src\/content\/archive\//, '').replace(/\.(md|mdx)$/, '');
+  for (const file of archiveMarkdownFiles(ARCHIVE_ROOT)) {
+    const raw = readFileSync(file, 'utf8');
+    const rel = relative(ARCHIVE_ROOT, file).replaceAll('\\', '/').replace(/\.(md|mdx)$/, '');
     const segs = rel.split('/');
     const base = segs[segs.length - 1];
     if (base === '_index') continue; // 文件夹导读不参与双链解析
 
     const fmMatch = raw.match(/^---\n([\s\S]*?)\n---/);
     const fm = fmMatch?.[1] ?? '';
+    const archivePath = fmScalar(fm, 'archive_path');
     const slug = fmScalar(fm, 'slug');
     const aliases = fmList(fm, 'aliases');
 
-    const path = [...segs.slice(0, -1), slug ?? base].join('/');
+    const path = archivePath ?? [...segs.slice(0, -1), slug ?? base].join('/');
     if (!wikiMap.has(base)) wikiMap.set(base, { path });
     for (const a of aliases) {
       if (!wikiMap.has(a)) wikiMap.set(a, { path });
@@ -117,6 +129,20 @@ function transformCallouts(tree: Root): void {
 function resolveWikiLinks(tree: Root, map: Map<string, WikiTarget>): void {
   const RE = /\[\[([^\[\]|]+)(?:\|([^\[\]]+))?\]\]/g;
 
+  const headingId = (heading: string) =>
+    heading
+      .normalize('NFKC')
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{Letter}\p{Number}\p{Mark}\s-]/gu, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+
+  const entities: Record<string, string> = {
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+  };
+  const escapeHtml = (value: string) => value.replace(/[&<>"']/g, (char) => entities[char]);
+
   visit(tree, 'text', (node: Text, index, parent: Parent | undefined) => {
     if (!parent || typeof index !== 'number') return;
     if (parent.type === 'link') return; // 已处在链接内则跳过
@@ -128,9 +154,11 @@ function resolveWikiLinks(tree: Root, map: Map<string, WikiTarget>): void {
     let last = 0;
     let m: RegExpExecArray | null;
     while ((m = RE.exec(node.value)) !== null) {
-      const [full, rawName, alias] = m;
-      const name = rawName.trim();
-      const label = (alias ?? name).trim();
+      const [full, rawTarget, alias] = m;
+      const hashIndex = rawTarget.indexOf('#');
+      const name = (hashIndex === -1 ? rawTarget : rawTarget.slice(0, hashIndex)).trim();
+      const heading = hashIndex === -1 ? '' : rawTarget.slice(hashIndex + 1).trim();
+      const label = (alias ?? (heading || name)).trim();
       if (m.index > last) {
         out.push({ type: 'text', value: node.value.slice(last, m.index) });
       }
@@ -138,14 +166,14 @@ function resolveWikiLinks(tree: Root, map: Map<string, WikiTarget>): void {
       if (target) {
         out.push({
           type: 'link',
-          url: `/archive/${target.path}/`,
+          url: `/archive/${target.path}/${heading ? `#${headingId(heading)}` : ''}`,
           data: { hProperties: { className: ['wikilink'] } },
           children: [{ type: 'text', value: label }],
         });
       } else {
         out.push({
           type: 'html',
-          value: `<span class="wikilink-broken">${label}</span>`,
+          value: `<span class="wikilink-broken" title="该条目尚未公开">${escapeHtml(label)}</span>`,
         });
       }
       last = m.index + full.length;

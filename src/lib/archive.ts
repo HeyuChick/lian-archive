@@ -18,8 +18,9 @@ export function isFolderIndex(entry: ArchiveEntry): boolean {
   return splitId(entry.id).base === '_index';
 }
 
-/** 条目 URL 路径：文件夹段原样（浏览器自动编码中文），末段用 slug ?? 文件名 */
+/** 条目 URL 路径：优先使用公开投影路径，与 Obsidian 物理目录解耦 */
 export function entryPath(entry: ArchiveEntry): string {
+  if (entry.data.archive_path) return entry.data.archive_path.replace(/^\/+|\/+$/g, '');
   const { folders, base } = splitId(entry.id);
   return [...folders, entry.data.slug ?? base].join('/');
 }
@@ -39,7 +40,7 @@ export function scanWikiLinks(body: string | undefined): string[] {
   const re = /\[\[([^\[\]|]+)(?:\|[^\[\]]+)?\]\]/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(body)) !== null) {
-    out.add(m[1].trim());
+    out.add(m[1].split('#', 1)[0].trim());
   }
   return [...out];
 }
@@ -59,20 +60,22 @@ export function backlinksOf(entry: ArchiveEntry, all: ArchiveEntry[]): ArchiveEn
   );
 }
 
-/** 按文件夹路径分组（扁平展示，组间按路径排序，组内按 order 再按 id） */
-export function groupByFolder(entries: ArchiveEntry[]): { folder: string; items: ArchiveEntry[] }[] {
+/** 按公开分区分组，组内按 archive_order 排序 */
+export function groupBySection(entries: ArchiveEntry[]): { section: string; items: ArchiveEntry[] }[] {
   const groups = new Map<string, ArchiveEntry[]>();
   for (const e of entries) {
-    const folder = splitId(e.id).folders.join(' / ');
-    if (!groups.has(folder)) groups.set(folder, []);
-    groups.get(folder)!.push(e);
+    const section = e.data.archive_section || splitId(e.id).folders.join(' / ');
+    if (!groups.has(section)) groups.set(section, []);
+    groups.get(section)!.push(e);
   }
   return [...groups.entries()]
     .sort(([a], [b]) => a.localeCompare(b, 'zh-CN'))
-    .map(([folder, items]) => ({
-      folder,
+    .map(([section, items]) => ({
+      section,
       items: items.sort(
-        (a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id, 'zh-CN'),
+        (a, b) =>
+          a.data.archive_order - b.data.archive_order ||
+          entryPath(a).localeCompare(entryPath(b), 'en'),
       ),
     }));
 }

@@ -16,6 +16,10 @@ export const HTML_LANG: Record<Locale, string> = {
 // 情绪色彩系统：mood 驱动每页/每篇文章的强调色
 export const MOODS = {
   calm: { color: '#7fb8a4', label: { zh: '平静', en: 'Calm', ja: '穏やか' } },
+  focus: { color: '#67e8f9', label: { zh: '波动', en: 'Focus', ja: '揺動' } },
+  tense: { color: '#a78bfa', label: { zh: '紧张', en: 'Tense', ja: '緊張' } },
+  excited: { color: '#f472b6', label: { zh: '兴奋', en: 'Excited', ja: '興奮' } },
+  overload: { color: '#f87171', label: { zh: '过载', en: 'Overload', ja: '過負荷' } },
   joy: { color: '#f2c14e', label: { zh: '雀跃', en: 'Joy', ja: 'ときめき' } },
   gloom: { color: '#5d6d9e', label: { zh: '低气压', en: 'Gloom', ja: '低気圧' } },
   warm: { color: '#e08e79', label: { zh: '温暖', en: 'Warm', ja: 'あたたかい' } },

@@ -2,14 +2,14 @@
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { MOODS } from '../../consts';
-import { entryPath, entryTitle, groupByFolder, isFolderIndex } from '../../lib/archive';
+import { entryPath, entryTitle, groupBySection, isFolderIndex } from '../../lib/archive';
 
 const entries = await getCollection(
   'archive',
   ({ data }) => (import.meta.env.PROD ? data.publish : true),
 );
 const visible = entries.filter((e) => !isFolderIndex(e));
-const groups = groupByFolder(visible);
+const groups = groupBySection(visible);
 
 const moodColor = (mood: string) =>
   (MOODS as Record<string, { color: string }>)[mood]?.color ?? 'rgb(94, 234, 212)';
@@ -24,9 +24,9 @@ const moodColor = (mood: string) =>
     {visible.length === 0 ? (
       <p class="empty-state">// 暂无公开档案 //</p>
     ) : (
-      groups.map(({ folder, items }) => (
+      groups.map(({ section, items }) => (
         <section class="folder-group">
-          {folder && <p class="folder-title">{folder}</p>}
+          {section && <p class="folder-title">{section}</p>}
           <ul class="post-list">
             {items.map((entry) => (
               <li>
@@ -35,7 +35,12 @@ const moodColor = (mood: string) =>
                   href={`/archive/${entryPath(entry)}/`}
                   style={`--mood: ${moodColor(entry.data.mood)}`}
                 >
-                  <span class="post-title">{entryTitle(entry)}</span>
+                  <span class="post-copy">
+                    <span class="post-title">{entryTitle(entry)}</span>
+                    {entry.data.archive_summary && (
+                      <span class="post-summary">{entry.data.archive_summary}</span>
+                    )}
+                  </span>
                   {entry.data.updated && (
                     <time class="post-date" datetime={entry.data.updated.toISOString()}>
                       {entry.data.updated.toLocaleDateString('zh-CN')}

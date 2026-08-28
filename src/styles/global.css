@@ -326,6 +326,20 @@ main {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.post-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.post-summary {
+  color: var(--text-faint);
+  font-size: 0.82rem;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .post-row:hover .post-title { color: rgb(var(--goo-color)); }
 .post-date {
   font-family: var(--font-mono);

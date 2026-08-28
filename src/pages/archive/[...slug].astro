@@ -5,7 +5,6 @@ import { MOODS } from '../../consts';
 import {
   entryPath,
   entryTitle,
-  splitId,
   isFolderIndex,
   backlinksOf,
   type ArchiveEntry,
@@ -32,16 +31,16 @@ const { entry, all } = Astro.props;
 const { Content } = await render(entry);
 
 const title = entryTitle(entry);
-const { folders } = splitId(entry.id);
+const section = entry.data.archive_section;
 const backlinks = backlinksOf(entry, all);
 const mood = (entry.data.mood || 'calm') as any;
 ---
 <BaseLayout title={title} mood={mood}>
   <article class="prose" style={`--mood: ${(MOODS as Record<string, { color: string }>)[entry.data.mood]?.color ?? 'rgb(94, 234, 212)'}`}>
-    {folders.length > 0 && (
+    {section && (
       <p class="post-meta">
         <a href="/archive/" style="text-decoration:none;color:inherit">ARCHIVE</a>
-        {' / ' + folders.join(' / ')}
+        {' / ' + section}
       </p>
     )}
     <Content />

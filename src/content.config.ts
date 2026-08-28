@@ -30,8 +30,15 @@ const archive = defineCollection({
       aliases: z.array(z.string()).default([]),
       mood: z.string().default('calm'),
       order: z.number().default(0),
+      // 公开投影字段：URL、分组和排序均与 Obsidian 物理目录解耦
+      archive_path: z.string(),
+      archive_section: z.string(),
+      archive_order: z.number().default(0),
+      archive_summary: z.string().optional(),
       publish: z.boolean().default(false),
       updated: z.coerce.date().optional(),
+      source_path: z.string().optional(),
+      source_hash: z.string().optional(),
     })
     .passthrough(),
 });

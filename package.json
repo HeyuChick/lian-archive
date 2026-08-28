@@ -9,7 +9,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "astro build && wrangler deploy",
-    "sync:archive": "node scripts/sync-archive.mjs"
+    "sync:archive": "node scripts/sync-archive.mjs",
+    "sync:archive:dry-run": "node scripts/sync-archive.mjs --dry-run",
+    "sync:archive:check": "node scripts/sync-archive.mjs --check"
   },
   "dependencies": {
     "astro": "^5.12.0"

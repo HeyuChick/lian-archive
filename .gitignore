@@ -6,3 +6,5 @@ dist/
 .env
 .DS_Store
 .obsidian/
+src/content/.archive-sync-*/
+src/content/.archive-backup-*/

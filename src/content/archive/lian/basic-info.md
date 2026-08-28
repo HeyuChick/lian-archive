@@ -1,17 +1,23 @@
 ---
-type: character_setting
-character: "[[涟]]"
-topic: basic_info
-status: developing
-canon: canon
-updated: 2026-07-16
-tags:
-  - oc/setting
 title: "基础信息"
-order: 1
-mood: calm
+aliases:
+  - "01_基础信息"
+mood: "calm"
+order: 10
+archive_path: "lian/basic-info"
+archive_section: "角色 / 涟"
+archive_order: 10
+archive_summary: "涟的姓名、种族、年龄、体型与世界归属"
 publish: true
+updated: "2026-07-16"
+type: "character_setting"
+status: "developing"
+canon: "canon"
+source_path: "10_角色/涟/01_基础信息.md"
+source_hash: "c4b9f964fff6fdb6"
 ---
+
+<!-- GENERATED FILE: edit the source note in oc-lian, then run npm run sync:archive. -->
 
 > [!info] 角色导航
 > [[涟]] · [[01_基础信息]] · [[02_外观与形态]] · [[03_视觉设定规范]] · [[04_性格与心理]] · [[05_能力与规则]] · [[06_背景与经历]] · [[07_关系与互动]] · [[08_创作备注与变更日志]] · [[09_约稿简报]]
