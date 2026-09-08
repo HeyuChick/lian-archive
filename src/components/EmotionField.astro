@@ -1,50 +1,63 @@
----
-// 情绪漂移系统：页面 mood 为锚点，指针交互沿色阶向上漂移 1–2 阶后回落
-// 读取 <html data-emo> 锚点，驱动 --goo-color 与 --waves-opacity
----
 <script>
   const EMOS = [
-    '255, 255, 255', /* 0 平静 白 */
-    '94, 234, 212',  /* 1 放松 海水蓝绿 */
-    '103, 232, 249', /* 2 波动 青 */
-    '167, 139, 250', /* 3 紧张 青紫 */
-    '244, 114, 182', /* 4 兴奋 洋红 */
-    '248, 113, 113'  /* 5 过载 红 */
+    '255, 255, 255',
+    '94, 234, 212',
+    '103, 232, 249',
+    '167, 139, 250',
+    '244, 114, 182',
+    '248, 113, 113',
   ];
-  const WAVES_BASE = 0.08;  /* 档案站阅读优先，波纹低压运行 */
-  const WAVES_STEP = 0.03;
-
   const root = document.documentElement;
-  const anchor = Math.min(5, Math.max(0, parseInt(root.dataset.emo || '1', 10) || 1));
-  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motion = matchMedia('(prefers-reduced-motion: reduce)');
+  let anchor = 1;
+  let energy = 0;
+  let current = -1;
+  let timer = 0;
+  let lastMove = 0;
 
-  /* 初始染色：页面锚点情绪 */
-  root.style.setProperty('--goo-color', EMOS[anchor]);
-  root.style.setProperty('--waves-opacity', String(WAVES_BASE + anchor * WAVES_STEP));
-
-  if (!reduced) {
-    let energy = 0;
-    let current = anchor;
-
-    const add = n => { energy = Math.min(2, energy + n); };
-
-    let lastMove = 0;
-    window.addEventListener('pointermove', () => {
-      const now = Date.now();
-      if (now - lastMove > 150) { lastMove = now; add(0.06); }
-    });
-    window.addEventListener('pointerdown', () => add(0.3));
-    document.querySelectorAll('a, button')
-      .forEach(el => el.addEventListener('mouseenter', () => add(0.15)));
-
-    setInterval(() => {
-      energy = Math.max(0, energy - 0.08);
-      const stage = Math.min(5, anchor + Math.round(energy));
-      if (stage !== current) {
-        current = stage;
-        root.style.setProperty('--goo-color', EMOS[stage]);
-        root.style.setProperty('--waves-opacity', String(WAVES_BASE + stage * WAVES_STEP));
-      }
-    }, 400);
+  function paint() {
+    const stage = Math.min(5, anchor + Math.round(energy));
+    if (stage === current) return;
+    current = stage;
+    root.style.setProperty('--goo-color', EMOS[stage]);
+    root.style.setProperty('--waves-opacity', String(0.08 + stage * 0.03));
   }
+  function decay() {
+    timer = 0;
+    energy = Math.max(0, energy - 0.08);
+    paint();
+    if (energy > 0) timer = window.setTimeout(decay, 400);
+  }
+  function add(n: number) {
+    if (motion.matches || document.hidden) return;
+    energy = Math.min(2, energy + n);
+    if (!timer) timer = window.setTimeout(decay, 400);
+  }
+  function sync() {
+    clearTimeout(timer);
+    timer = 0;
+    if (motion.matches) { energy = 0; paint(); }
+    if (!document.hidden && energy > 0) timer = window.setTimeout(decay, 400);
+  }
+  function page() {
+    anchor = Math.min(5, Math.max(0, Number(root.dataset.emo ?? 1)));
+    energy = 0;
+    current = -1;
+    sync();
+    paint();
+  }
+
+  window.addEventListener('pointermove', () => {
+    const now = performance.now();
+    if (now - lastMove > 150) { lastMove = now; add(0.06); }
+  }, { passive: true });
+  window.addEventListener('pointerdown', () => add(0.3), { passive: true });
+  document.addEventListener('pointerover', e => {
+    const target = (e.target as Element)?.closest('a, button');
+    if (target && (!(e.relatedTarget instanceof Node) || !target.contains(e.relatedTarget))) add(0.15);
+  });
+  document.addEventListener('visibilitychange', sync);
+  motion.addEventListener('change', sync);
+  document.addEventListener('astro:after-swap', page);
+  page();
 </script>

@@ -106,6 +106,7 @@ html.has-cursor * {
   border-radius: 50%;
   background: rgb(var(--goo-color));
   pointer-events: none;
+  will-change: transform;
   opacity: 0;
   transition:
     opacity .3s ease,
@@ -129,8 +130,33 @@ html.has-cursor * {
   border-radius: 1px;
   opacity: .9;
 }
+.cursor-dot:not(.visible) { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   .cursor-dot { display: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* 快照的层次与页面一致，正文遮挡关系和光标位置随过渡保留。 */
+::view-transition-group(root) { z-index: 0; }
+::view-transition-group(waves) { z-index: 1; }
+::view-transition-group(content) { z-index: 2; }
+::view-transition-group(header),
+::view-transition-group(footer) { z-index: 50; }
+::view-transition-group(cursor) { z-index: 100; }
+
+::view-transition-group(waves),
+::view-transition-group(cursor),
+::view-transition-new(waves),
+::view-transition-new(cursor) {
+  animation: none;
+}
+::view-transition-old(waves),
+::view-transition-old(cursor) {
+  display: none;
+}
+::view-transition-new(waves),
+::view-transition-new(cursor) {
+  mix-blend-mode: normal;
 }
 
 /* ============================================================
@@ -225,6 +251,8 @@ html.has-cursor * {
 
 /* 正文区为固定栏让位；flex 兑底；宽度与主站一致 */
 main {
+  position: relative;
+  z-index: 1;
   flex: 1 0 auto;
   width: 100%;
   max-width: var(--max-w);

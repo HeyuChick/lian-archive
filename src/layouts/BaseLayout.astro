@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
-import { SITE_TITLE, SITE_DESCRIPTION, DEFAULT_LOCALE, HTML_LANG, MOODS, type Locale, type Mood } from '../consts';
+import { SITE_DESCRIPTION, DEFAULT_LOCALE, HTML_LANG, MOODS, type Locale, type Mood } from '../consts';
 import { t } from '../i18n/ui';
 import LangSwitcher from '../components/LangSwitcher.astro';
 import SlimeRipple from '../components/SlimeRipple.astro';
@@ -43,12 +43,11 @@ const emoRgb = EMO_RGB[mood] ?? EMO_RGB.calm;
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{pageTitle}</title>
-    {/* 客户端路由：页面切换不再整页刷新，配合 transition:persist 保持光标与背景层 */}
     <ClientRouter />
   </head>
   <body>
-    <AWaves transition:persist />
-    <header class="site-header">
+    <AWaves />
+    <header class="site-header" transition:name="header">
       <div class="header-inner">
         <a class="site-title" href={homeHref} data-i18n="site.title">{siteTitle}</a>
         <nav class="site-nav">
@@ -58,57 +57,49 @@ const emoRgb = EMO_RGB[mood] ?? EMO_RGB.calm;
         </nav>
       </div>
     </header>
-    <main>
+    <main transition:name="content">
       <slot />
     </main>
-    <footer class="site-footer">
+    <footer class="site-footer" transition:name="footer">
       <div class="footer-inner">
         <span>© 2026 LIAN / HEYUCHICK</span>
         <span data-i18n="footer.note">{strings['footer.note']}</span>
       </div>
     </footer>
-    <SlimeRipple transition:persist />
-    <EmotionField transition:persist />
+    <SlimeRipple />
+    <EmotionField />
     <CursorDot />
 
-    {/* 客户端 i18n：共享组件，主站可复用 */}
     <I18nScript />
 
-    {/* 代码块复制：事件委托一次绑定永久有效；is:inline 脚本每次导航后重跑，由 window 旗标防重 */}
-    <script is:inline>
-      (function () {
-        if (window.__copyDelegated) return;
-        window.__copyDelegated = true;
-        document.addEventListener('click', function (e) {
-          var btn = e.target && e.target.closest ? e.target.closest('.code-copy') : null;
-          if (!btn) return;
-          var block = btn.closest('.code-block');
-          var pre = block && block.querySelector('pre');
-          if (!pre) return;
-          var done = function () {
-            btn.classList.add('copied');
-            btn.textContent = 'copied';
-            setTimeout(function () {
-              btn.classList.remove('copied');
-              btn.textContent = 'copy';
-            }, 1500);
-          };
-          if (navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(pre.innerText).then(done);
-          } else {
-            // 降级：非安全上下文（http）等场景
-            var ta = document.createElement('textarea');
-            ta.value = pre.innerText;
-            ta.style.position = 'fixed';
-            ta.style.opacity = '0';
-            document.body.appendChild(ta);
-            ta.select();
-            document.execCommand('copy');
-            ta.remove();
-            done();
-          }
-        });
-      })();
+    <script>
+      document.addEventListener('click', (e) => {
+        const target = e.target as Element | null;
+        const btn = target?.closest<HTMLButtonElement>('.code-copy');
+        const pre = btn?.closest('.code-block')?.querySelector('pre');
+        if (!btn || !pre) return;
+        const done = () => {
+          btn.classList.add('copied');
+          btn.textContent = 'copied';
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.textContent = 'copy';
+          }, 1500);
+        };
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(pre.innerText).then(done);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = pre.innerText;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          ta.remove();
+          done();
+        }
+      });
     </script>
   </body>
 </html>
