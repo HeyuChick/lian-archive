@@ -13,7 +13,6 @@ updated: "2026-07-16"
 type: "character_setting"
 status: "developing"
 canon: "canon"
-source_path: "10_角色/涟/05_能力与规则.md"
 source_hash: "d0c6fb11381d7e25"
 ---
 

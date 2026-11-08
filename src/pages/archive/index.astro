@@ -1,8 +1,11 @@
 ---
 import { getCollection } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { MOODS } from '../../consts';
+import { MOODS, DEFAULT_LOCALE } from '../../consts';
+import { t } from '../../i18n/ui';
 import { entryPath, entryTitle, groupBySection, isFolderIndex } from '../../lib/archive';
+
+const strings = t(DEFAULT_LOCALE);
 
 const entries = await getCollection(
   'archive',
@@ -17,12 +20,12 @@ const moodColor = (mood: string) =>
 <BaseLayout title="档案馆">
   <section>
     <header class="page-head">
-      <p class="page-kicker">SPECIMEN ARCHIVE</p>
-      <h1 class="page-title">样本档案</h1>
+      <p class="page-kicker" data-i18n="archive.kicker">{strings['archive.kicker']}</p>
+      <h1 class="page-title" data-i18n="archive.title">{strings['archive.title']}</h1>
     </header>
 
     {visible.length === 0 ? (
-      <p class="empty-state">// 暂无公开档案 //</p>
+      <p class="empty-state" data-i18n="archive.empty">{strings['archive.empty']}</p>
     ) : (
       groups.map(({ section, items }) => (
         <section class="folder-group">

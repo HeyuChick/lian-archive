@@ -1,7 +1,8 @@
 ---
 import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { MOODS } from '../../consts';
+import { MOODS, DEFAULT_LOCALE } from '../../consts';
+import { t } from '../../i18n/ui';
 import {
   entryPath,
   entryTitle,
@@ -29,6 +30,7 @@ interface Props {
 
 const { entry, all } = Astro.props;
 const { Content } = await render(entry);
+const strings = t(DEFAULT_LOCALE);
 
 const title = entryTitle(entry);
 const section = entry.data.archive_section;
@@ -47,7 +49,7 @@ const mood = (entry.data.mood || 'calm') as any;
 
     {backlinks.length > 0 && (
       <section class="backlinks">
-        <h2>◈ 被引用于</h2>
+        <h2 data-i18n="archive.backlinks">{strings['archive.backlinks']}</h2>
         <ul>
           {backlinks.map((from) => (
             <li>

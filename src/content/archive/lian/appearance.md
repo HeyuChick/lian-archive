@@ -13,7 +13,6 @@ updated: "2026-10-14"
 type: "character_setting"
 status: "developing"
 canon: "canon"
-source_path: "10_角色/涟/02_外观与形态.md"
 source_hash: "384148918fa33801"
 ---
 

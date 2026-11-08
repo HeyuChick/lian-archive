@@ -13,7 +13,6 @@ updated: "2026-07-16"
 type: "character_setting"
 status: "developing"
 canon: "canon"
-source_path: "10_角色/涟/06_背景与经历.md"
 source_hash: "2371ea2c9079a21b"
 ---
 

@@ -14,7 +14,6 @@ updated: "2026-07-16"
 type: "world"
 status: "developing"
 canon: "canon"
-source_path: "20_世界观/世界总览.md"
 source_hash: "756d6bb3e0103039"
 ---
 

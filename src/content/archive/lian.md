@@ -16,7 +16,6 @@ updated: "2026-07-16"
 type: "character"
 status: "developing"
 canon: "canon"
-source_path: "10_角色/涟/涟.md"
 source_hash: "e4c8b6c2ca8b4507"
 ---
 

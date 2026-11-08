@@ -13,7 +13,6 @@ updated: "2026-07-16"
 type: "species"
 status: "developing"
 canon: "canon"
-source_path: "20_世界观/规则/海蛞蝓共生体.md"
 source_hash: "7fc89c7ef5e68974"
 ---
 

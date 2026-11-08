@@ -2,7 +2,8 @@
 // I18nScript —— 客户端 i18n 共享组件
 // 读取 localStorage 持久化语言选择，全站 UI 即时切换。
 // 事件委托实现，按钮替换/脚本延迟均不影响；导航后自动重跑。
-// 主站（heyuchick.github.io）只需在布局中放入 <I18nScript /> 即可复用。
+// 存储键 `lian-lang` 与主站（heyuchick.com，lian-site 单页）同名；
+// 但两站分属不同子域，localStorage 并不互通，各自记忆语言选择。
 ---
 <script>
   import { ui } from '../i18n/ui';

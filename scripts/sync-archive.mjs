@@ -210,8 +210,9 @@ function compileNote(note) {
     if (value) lines.push(`${key}: ${yamlString(value)}`);
   }
 
+  // 不输出 source_path：它会暴露 oc-lian 的物理目录结构。
+  // 需要追溯源文件时看同步日志（错误信息里带源路径）或用 source_hash 比对。
   lines.push(
-    `source_path: ${yamlString(note.sourcePath)}`,
     `source_hash: ${yamlString(sourceHash)}`,
     '---',
     '',

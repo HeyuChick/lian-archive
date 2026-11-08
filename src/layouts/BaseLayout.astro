@@ -34,9 +34,11 @@ const EMO_RGB: Record<string, string> = {
 };
 const emoIndex = EMO_INDEX[mood] ?? 1;
 const emoRgb = EMO_RGB[mood] ?? EMO_RGB.calm;
+// 兜底：即使传入未知 mood 也不让页面渲染崩溃
+const moodColor = (MOODS[mood] ?? MOODS.calm).color;
 ---
 <!doctype html>
-<html lang={HTML_LANG[locale]} data-emo={emoIndex} style={`--mood: ${MOODS[mood].color}; --goo-color: ${emoRgb}`}>
+<html lang={HTML_LANG[locale]} data-emo={emoIndex} style={`--mood: ${moodColor}; --goo-color: ${emoRgb}`}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

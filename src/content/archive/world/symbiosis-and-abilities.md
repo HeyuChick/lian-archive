@@ -13,7 +13,6 @@ updated: "2026-07-16"
 type: "world_rule"
 status: "developing"
 canon: "canon"
-source_path: "20_世界观/规则/共生与能力规则.md"
 source_hash: "e35dcc7da0dd4369"
 ---
 

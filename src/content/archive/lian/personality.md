@@ -13,7 +13,6 @@ updated: "2026-07-16"
 type: "character_setting"
 status: "developing"
 canon: "canon"
-source_path: "10_角色/涟/04_性格与心理.md"
 source_hash: "659a7c676c427444"
 ---
 

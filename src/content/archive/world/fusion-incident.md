@@ -13,7 +13,6 @@ updated: "2026-07-16"
 type: "event"
 status: "developing"
 canon: "canon"
-source_path: "20_世界观/事件/融合事故.md"
 source_hash: "e802718a23ebf3b2"
 ---
 
